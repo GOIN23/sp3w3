@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 export const SETTINGS = {
   PORT: process.env.PORT || 3004,
   JWT_SECRET: "123",
@@ -19,7 +22,7 @@ export const SETTINGS = {
     HTTPCOD_401: 401,
     HTTPCOD_403: 403,
   },
-  MONGO_URL: "mongodb://localhost:27017",
+  MONGO_URL: process.env.MONGO_URL || "mongodb://localhost:27017",
   DB_NAME: "page",
   DB_TEST: "test",
   BLOG_COLLECTION_NAME: "blogs",
