@@ -2,19 +2,32 @@ import { SortDirection } from "mongodb";
 import { dbT } from "../db/mongo-.db";
 import { PaginatorUsers, UserViewModel2, UserViewModelConfidential, qureUsers } from "../types/typeUser";
 
-export const qrepostoryBlogs = {
+export const qrepostoryUsers = {
   async getUsers(query: qureUsers): Promise<PaginatorUsers | { error: string }> {
     const searchEmail = query.searchEmailTerm ? { email: { $regex: query.searchEmailTerm, $options: "i" } } : {};
     const searchLogin = query.searchLoginTerm ? { login: { $regex: query.searchLoginTerm, $options: "i" } } : {};
 
     const filter = {
-      $or: [searchEmail, searchLogin],
+      $or: [
+      { email: { $regex: query.searchEmailTerm ?? "", $options: "i" } },
+      { login: { $regex: query.searchLoginTerm ?? "", $options: "i" } }
+     ],
     };
     // const filter: Filter<UserAccountDBModel> = {
     //   $or: [
     //     { "accountData.login": { $regex: searchLoginTerm ?? "", $options: "i" } },
     //     { "accountData.email": { $regex: searchEmailTerm ?? "", $options: "i" } },
     //   ],
+    // };
+    // const filter = {
+    //   $or: [
+    //     { email: { $regex: `.*${query.searchEmailTerm}.*`, $options: "i" } },
+    //     { login: { $regex: `.*${query.searchLoginTerm}.*`, $options: "i" }}
+    //   ]
+    // };
+
+    // const filter = {
+    //   $or: [searchEmail, searchLogin],
     // };
 
     try {

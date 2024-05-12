@@ -1,16 +1,16 @@
 import express, { Request, Response } from "express";
-import { validaEmail, validaLogine, validapassword, validasearchLoginTerm, validasearchSearchEmailTerm } from "../validation/validationUsers";
+import {  validaLoginPasswordEmail, validasearchLoginTerm, validasearchSearchEmailTerm } from "../validation/validationUsers";
 import { validaError, validaQurePageSezi, validaQureSortBy, validaQureipageNumber, validaQursortDirection } from "../validation/generalvValidation";
 import { usersService } from "../services/users-service";
 import { SETTINGS } from "../seting/seting";
-import { qrepostoryBlogs } from "../repository/qreposttoryUsers";
+import { qrepostoryUsers } from "../repository/qreposttoryUsers";
 import { authMiddleware } from "../auth/authMiddleware";
 import { qureUsers } from "../types/typeUser";
 
 export const routerUsers = () => {
   const router = express.Router();
 
-  router.post("/", authMiddleware, validaLogine, validapassword, validaEmail, validaError, async (req: Request, res: Response) => {
+  router.post("/", authMiddleware, validaLoginPasswordEmail, validaError, async (req: Request, res: Response) => {
     const newUser = await usersService.creatUsers(req.body);
     res.status(SETTINGS.HTTPCOD.HTTPCOD_201).send(newUser);
   });
@@ -24,10 +24,7 @@ export const routerUsers = () => {
     validasearchLoginTerm,
     validasearchSearchEmailTerm,
     async (req: Request<{}, {}, {}, qureUsers>, res: Response) => {
-
-      const result = await qrepostoryBlogs.getUsers(req.query);
-
-
+      const result = await qrepostoryUsers.getUsers(req.query);
 
       res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send(result);
       return;

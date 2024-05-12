@@ -1,9 +1,9 @@
 import { ObjectId } from "mongodb";
 import { dbT } from "../db/mongo-.db";
-import { UserViewModel, UserViewModelConfidential } from "../types/typeUser";
+import { UserViewModel, UserViewModelConfidential, userDb } from "../types/typeUser";
 
 export const repositoryUsers = {
-  async createUsers(newUser: UserViewModelConfidential): Promise<any> {
+  async createUsers(newUser: userDb): Promise<any> {
     const res = await dbT.getCollections().userCollection.insertOne(newUser);
 
     return res.insertedId;
@@ -15,8 +15,20 @@ export const repositoryUsers = {
     }
     return result;
   },
-  async findBlogOrEmail(loginOrEmail: string): Promise<UserViewModelConfidential | null> {
+  async findBlogOrEmail(loginOrEmail: string): Promise<userDb | null> {
     const user = await dbT.getCollections().userCollection.findOne({ $or: [{ login: loginOrEmail }, { email: loginOrEmail }] });
+
+    return user;
+  },
+
+  async updateConfirmation(id: string) {
+    const user = await dbT.getCollections().userCollection.updateOne({ _id: id }, { $set: { "emailConfirmation.isConfirmed": true } });
+
+    return user.modifiedCount === 1;
+  },
+
+  async findUserByConfirEmail(code: string) {
+    const user = await dbT.getCollections().userCollection.findOne({ "emailConfirmation.confirmationCode": code });
 
     return user;
   },

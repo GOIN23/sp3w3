@@ -105,7 +105,6 @@ describe("/test for users", () => {
       .get("/api/blogs/" + blogsTest.items[0].id)
       .expect(blogsTest.items[0]);
   });
-
   it("creating a blog post", async () => {
     const res = await request(app)
       .post(`/api/blogs/${blogsTest.items[0].id}/posts`)
@@ -123,7 +122,6 @@ describe("/test for users", () => {
       .get(`/api/posts/` + res.body.id)
       .expect(res.body);
   });
-
   it("get blog post", async () => {
     await request(app)
       .get(`/api/blogs/${blogsTest.items[0].id}/posts`)
@@ -216,7 +214,6 @@ describe("/test for users", () => {
       .get("/api/blogs")
       .expect({ pagesCount: 1, page: 1, pageSize: 10, totalCount: 5, items: [...resul.body.items] });
   });
-
   it("checking query - pageSize and pageNumber", async () => {
     await request(app)
       .get("/api/blogs")
@@ -251,7 +248,6 @@ describe("/test for users", () => {
         items: [blogsTest.items[0], blogsTest.items[1]],
       });
   });
-
   it("checking query - sortDirection and sortBy", async () => {
     await request(app)
       .get("/api/blogs")

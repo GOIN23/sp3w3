@@ -1,19 +1,29 @@
 import { ObjectId } from "mongodb";
-import { UserInputModel, UserViewModel, UserViewModel2, UserViewModelConfidential } from "../types/typeUser";
+import { UserInputModel, UserViewModel, UserViewModel2, UserViewModelConfidential, userDb } from "../types/typeUser";
 import { repositoryUsers } from "../repository/repostiryUsers";
 import bcrypt from "bcrypt";
+import { randomUUID } from "crypto";
+import { add } from "date-fns";
 
 export const usersService = {
   async creatUsers(body: UserInputModel): Promise<UserViewModel2 | null> {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this._generatHash(body.password, passwordSalt);
 
-    const newUser: UserViewModelConfidential = {
+    const newUser: userDb = {
       _id: String(new ObjectId()),
       login: body.login,
       passwordHash,
       passwordSalt,
       email: body.email,
+      emailConfirmation: {
+        confirmationCode: randomUUID(),
+        expirationDate: add(new Date(), {
+          hours: 1,
+          minutes: 30,
+        }),
+        isConfirmed: false,
+      },
       createdAt: new Date().toISOString(),
     };
 

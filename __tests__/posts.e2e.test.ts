@@ -6,9 +6,13 @@ import { SETTINGS } from "../src/seting/seting";
 import { PaginatorPosts, PostViewModelT } from "../src/types/typePosts";
 import { dbT } from "../src/db/mongo-.db";
 import { MongoMemoryServer } from "mongodb-memory-server";
+import { testSeder } from "./utilitTest/testSeder";
+import { Paginator } from "../src/types/generalType";
+import { CommentViewModel } from "../src/types/typeCommen";
 
 let postsTestIdTest: PaginatorPosts = { pagesCount: 0, page: 1, pageSize: 10, totalCount: 0, items: [] };
 let blogTest: PaginatorBlog = { pagesCount: 0, page: 1, pageSize: 10, totalCount: 0, items: [] };
+let commentsTests: Paginator<CommentViewModel> = { pagesCount: 0, page: 1, pageSize: 10, totalCount: 0, items: [] };
 
 const buff2 = Buffer.from(ADMIN_AUTH, "utf8");
 const codedAuth: string = buff2.toString("base64");
@@ -181,7 +185,7 @@ describe("/test for users", () => {
       })
       .expect(201);
 
-      await request(app)
+    await request(app)
       .post("/api/posts")
       .set({ Authorization: "Basic " + codedAuth })
       .send({
@@ -192,7 +196,7 @@ describe("/test for users", () => {
       })
       .expect(201);
 
-      await request(app)
+    await request(app)
       .post("/api/posts")
       .set({ Authorization: "Basic " + codedAuth })
       .send({
@@ -271,6 +275,68 @@ describe("/test for users", () => {
         totalCount: 5,
         items: [postsTestIdTest.items[3], postsTestIdTest.items[2], postsTestIdTest.items[1], postsTestIdTest.items[0], postsTestIdTest.items[4]],
       });
+  });
+
+  it("- PUT product by ID with incorrect data", async () => {
+    await request(app)
+      .put("/api/posts/" + 1223)
+      .set({ Authorization: "Basic " + codedAuth })
+      .send({ title: "title", author: "title" })
+      .expect(SETTINGS.HTTPCOD.HTTPCOD_404);
+
+    const res = await request(app).get("/api/posts/");
+    expect(res.body).toEqual(postsTestIdTest);
+  });
+
+  //tests comments !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  it("- POSTS/:ID/COMMENTS. METHOD=POST invalid jwt token. Unauthorized", async () => {
+    await request(app)
+      .post(`/api/posts/${postsTestIdTest.items[0].id}/comments`)
+      .set({ Authorization: "Basic " + codedAuth })
+      .send({ content: "adasdas dasdas adas dad a" })
+      .expect(SETTINGS.HTTPCOD.HTTPCOD_401);
+  });
+
+  it("+ POSTS/:ID/COMMENTS METHOD=POST successful request creating comments", async () => {
+    await testSeder.registeUser({
+      email: "4e5.kn@mail.ru",
+      login: "fsasasfas",
+      password: "string",
+    });
+
+    const token = await testSeder.loginUser({
+      loginOrEmail: "fsasasfas",
+      password: "string",
+    });
+
+    const post = await request(app)
+      .post(`/api/posts/${postsTestIdTest.items[0].id}/comments`)
+      .set({ Authorization: "Bearer " + token.body.accessToken })
+      .send({ content: "adasds dasdas adas dad a" })
+      .expect(SETTINGS.HTTPCOD.HTTPCOD_201);
+
+    expect(post.body).toEqual({
+      id: expect.any(String),
+      commentatorInfo: { userId: expect.any(String), userLogin: "fsasasfas" },
+      content: "adasds dasdas adas dad a",
+      createdAt: expect.any(String),
+    });
+  });
+
+  it(" + POSTS/:ID/COMMENTS METHOD=GET check comment for receiving data", async () => {
+    const token = await testSeder.loginUser({
+      loginOrEmail: "fsasasfas",
+      password: "string",
+    });
+
+    const commentsArray = await testSeder.creatComments(postsTestIdTest.items[0].id, token.body.accessToken);
+
+    const comments = await request(app)
+      .get(`/api/posts/${postsTestIdTest.items[0].id}/comments`)
+      .set({ Authorization: "Bearer " + token.body.accessToken })
+      .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
+
+    expect(comments.body).toEqual({ pagesCount: 1, page: 1, pageSize: 10, totalCount: 4, items: commentsArray.body.items });
   });
 
   it("- DELETE product by incorrect ID", async () => {

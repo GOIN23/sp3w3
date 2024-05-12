@@ -164,7 +164,7 @@ describe("/test for users", () => {
   it("checking query - searchLoginTerm and searchEmailTerm", async () => {
     await request(app)
       .get("/api/users")
-      .query({ searchLoginTerm: "1HpluOp" })
+      .query({ searchEmailTerm: "1HpluOp" })
       .expect({
         pagesCount: 1,
         page: 1,
