@@ -6,6 +6,7 @@ import { jwtService } from "./application/jwtService";
 import { authTokenMiddleware } from "../auth/authTokenMiddleware";
 import { validaError } from "../validation/generalvValidation";
 import { authService } from "../services/auth-service";
+import { validabAuthdCodeCustm, validabAuthdEmailCustm, validabAuthdLoginCustm, validabAuthdresendingCodeCustm } from "../validation/validatAuth";
 
 export const routerAuth = () => {
   const router = express.Router();
@@ -22,38 +23,20 @@ export const routerAuth = () => {
     }
   });
 
-  router.post("/registration", validaLoginPasswordEmail, validaError, async (req: Request, res: Response) => {
-    const user = authService.findBlogOrEmail(req.body);
-
-    if (!user) {
-      res.sendStatus(400);
-      return;
-    }
+  router.post("/registration", validaLoginPasswordEmail, validabAuthdLoginCustm, validabAuthdEmailCustm, validaError, async (req: Request, res: Response) => {
     await authService.creatUser(req.body);
 
-    res.sendStatus(200);
+    res.status(204).send("Input data is accepted. Email with confirmation code will be send to passed email address");
   });
 
-  router.post("/registration-confirmation", validaError, async (req: Request, res: Response) => {
-    const result = await authService.confirmEmail(req.body.code);
-
-    if (!result) {
-      res.sendStatus(400);
-      return;
-    }
-
-    res.sendStatus(200);
+  router.post("/registration-confirmation", validabAuthdCodeCustm, validaError, async (req: Request, res: Response) => {
+    res.sendStatus(204);
+    return;
   });
 
-  router.post("/registration-email-resending", validaEmail, validaError, async (req: Request, res: Response) => {
-    const result = await authService.resendingCode(req.body.email);
-
-    if (!result) {
-      res.sendStatus(400);
-      return;
-    }
-
-    res.sendStatus(200);
+  router.post("/registration-email-resending", validaEmail, validabAuthdresendingCodeCustm, validaError, async (req: Request, res: Response) => {
+    res.sendStatus(204);
+    return;
   });
 
   router.get("/me", authTokenMiddleware, async (req: Request, res: Response) => {

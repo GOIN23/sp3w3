@@ -1,9 +1,9 @@
+import { repositoryUsers } from "./../repository/repostiryUsers";
 import { ObjectId } from "mongodb";
 import { UserInputModel, userDb } from "../types/typeUser";
 import bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
 import { add } from "date-fns";
-import { repositoryUsers } from "../repository/repostiryUsers";
 import nodemailer from "nodemailer";
 import { emailAdapter } from "../adapter/emailAdapter";
 
@@ -29,10 +29,13 @@ export const authService = {
         isConfirmed: false,
       },
     };
-
-    await emailAdapter.sendEmail(newUser);
-
     await repositoryUsers.createUsers(newUser);
+
+    try {
+      await emailAdapter.sendEmail(newUser.emailConfirmation.confirmationCode, newUser.email);
+    } catch (error) {
+      console.log(error);
+    }
   },
   async confirmEmail(code: string) {
     const user = await repositoryUsers.findUserByConfirEmail(code);
@@ -58,9 +61,14 @@ export const authService = {
     if (user.emailConfirmation.isConfirmed) {
       return null;
     }
+    const newCode = randomUUID();
+    const updateUser = await repositoryUsers.updateCodeUserByConfirEmail(user?._id, newCode);
 
-    await emailAdapter.sendEmail(user);
-
+    try {
+      await emailAdapter.sendEmail(newCode, email);
+    } catch (error) {
+      console.log(error);
+    }
     return true;
   },
   async _generatHash(password: string, salt: string) {
@@ -68,11 +76,10 @@ export const authService = {
 
     return hash;
   },
-  async findBlogOrEmail(body: UserInputModel) {
-    const checkLogin = await repositoryUsers.findBlogOrEmail(body.login);
-    const checkEmail = await repositoryUsers.findBlogOrEmail(body.email);
+  async findBlogOrEmail(emailOrLogin: string) {
+    const checkEmailorLogin = await repositoryUsers.findBlogOrEmail(emailOrLogin);
 
-    if (checkLogin || checkEmail) {
+    if (checkEmailorLogin) {
       return null;
     }
 

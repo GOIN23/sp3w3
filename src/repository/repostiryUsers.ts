@@ -32,6 +32,12 @@ export const repositoryUsers = {
 
     return user;
   },
+
+ async updateCodeUserByConfirEmail(userID:string,code: string) {
+    const user = await dbT.getCollections().userCollection.updateOne({ _id: userID }, { $set: { "emailConfirmation.confirmationCode": code }});
+
+    return user;
+  },
   async deleteBlogs(id: string): Promise<void> {
     await dbT.getCollections().userCollection.deleteOne({ _id: id });
   },
