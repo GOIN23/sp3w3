@@ -20,6 +20,12 @@ export const dbT = {
       console.log("ошибка при подключении");
     }
   },
+  async drop() {
+    await this.getCollections().blogCollection.deleteMany({});
+    await this.getCollections().postCollection.deleteMany({});
+    await this.getCollections().userCollection.deleteMany({});
+    await this.getCollections().commentCollection.deleteMany({});
+  },
   async stop() {
     await this.client.close();
     console.log("disconnection from server successful");

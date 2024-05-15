@@ -1,6 +1,6 @@
 import { repositoryUsers } from "./../repository/repostiryUsers";
 import { ObjectId } from "mongodb";
-import { UserInputModel, userDb } from "../types/typeUser";
+import { UserInputModel, UserViewModel2, userDb } from "../types/typeUser";
 import bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
 import { add } from "date-fns";
@@ -8,7 +8,7 @@ import nodemailer from "nodemailer";
 import { emailAdapter } from "../adapter/emailAdapter";
 
 export const authService = {
-  async creatUser(userData: UserInputModel) {
+  async creatUser(userData: UserInputModel): Promise<UserViewModel2> {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this._generatHash(userData.password, passwordSalt);
 
@@ -36,6 +36,13 @@ export const authService = {
     } catch (error) {
       console.log(error);
     }
+
+    return {
+      id: newUser._id,
+      createdAt: newUser.createdAt,
+      email: newUser.email,
+      login: newUser.login,
+    };
   },
   async confirmEmail(code: string) {
     const user = await repositoryUsers.findUserByConfirEmail(code);
