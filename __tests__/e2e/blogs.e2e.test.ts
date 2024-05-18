@@ -15,7 +15,7 @@ let blogPosts: PostViewModelT;
 const buff2 = Buffer.from(ADMIN_AUTH, "utf8");
 let codedAuth: string = buff2.toString("base64");
 
-describe("/test for users", () => {
+describe("checking endpoint on path /api/blog", () => {
   beforeAll(async () => {
     const mongoServer = await MongoMemoryServer.create();
     await dbT.run(mongoServer.getUri());
@@ -86,7 +86,7 @@ describe("/test for users", () => {
         ],
       });
   });
-  it("+ POST resolve posts", async () => {
+  it("+ POST successful request to create a blog", async () => {
     await managerTestBlogs.creatBlogOne({
       name: "string",
       description: "string",

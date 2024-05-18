@@ -2,31 +2,15 @@ import { app } from "../../src/app";
 import request from "supertest";
 import { ADMIN_AUTH } from "../../src/auth/authMiddleware";
 import { SETTINGS } from "../../src/seting/seting";
-import { BlogInputModelT } from "../../src/types/typeBlog";
+import { BlogInputModelT, BlogViewModelT } from "../../src/types/typeBlog";
 import { PostInputModelT } from "../../src/types/typePosts";
 import { randomText } from "./randomText";
 
 const buff2 = Buffer.from(ADMIN_AUTH, "utf8");
 const codedAuth: string = buff2.toString("base64");
 
-export const managerTest = {
-  async requestPost(endpoint: string, send: any, statusCode: number, expectData?: any) {
-    if (statusCode === 401) {
-      await request(app).post(`${endpoint}`).send(send).expect(statusCode);
-      return;
-    }
-    const result = await request(app)
-      .post(`${endpoint}`)
-      .set({ Authorization: "Basic " + codedAuth })
-      .send(send)
-      .expect(statusCode, expectData);
-
-    return result;
-  },
-};
-
 export const managerTestBlogs = {
-  async creatBlogOne(sendInput: BlogInputModelT) {
+  async creatBlogOne(sendInput: BlogInputModelT): Promise<BlogViewModelT> {
     const blogs = await request(app)
       .post(SETTINGS.PATH.BLOGS)
       .set({ Authorization: "Basic " + codedAuth })

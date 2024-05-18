@@ -1,10 +1,13 @@
+import  jwt  from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { UserInputModel, userDb } from "../../src/types/typeUser";
+import { UserInputModel, UserViewModelConfidential, userDb } from "../../src/types/typeUser";
 import { ObjectId } from "mongodb";
 import { randomUUID } from "crypto";
 import { add } from "date-fns";
 import { repositoryUsers } from "../../src/repository/repostiryUsers";
 import { usersService } from "../../src/services/users-service";
+import { jwtService } from "../../src/routers/application/jwtService";
+import { SETTINGS } from "../../src/seting/seting";
 
 export const testSeder = {
   creatUserDto(): UserInputModel {
@@ -26,16 +29,16 @@ export const testSeder = {
 
     return user;
   },
-  async registerUser(inputData: UserInputModel) {
+  async registerUser(outputLogin: any) {
     const passwordSalt = await bcrypt.genSalt(10);
-    const passwordHash = await usersService._generatHash(inputData.password, passwordSalt);
+    const passwordHash = await usersService._generatHash(outputLogin.password, passwordSalt);
 
     const newUser: userDb = {
       _id: String(new ObjectId()),
-      login: inputData.login,
+      login: outputLogin.login,
       passwordHash,
       passwordSalt,
-      email: inputData.email,
+      email: outputLogin.email,
       emailConfirmation: {
         confirmationCode: randomUUID(),
         expirationDate: add(new Date(), {
@@ -47,7 +50,7 @@ export const testSeder = {
       createdAt: new Date().toISOString(),
     };
 
-    const user = await repositoryUsers.createUsers(newUser);
+    await repositoryUsers.createUsers(newUser);
 
     return {
       id: newUser._id,
@@ -55,5 +58,8 @@ export const testSeder = {
       email: newUser.email,
       createdAt: newUser.createdAt,
     };
+  },
+  async loginUser( id: string): Promise<string> {
+    
   },
 };
