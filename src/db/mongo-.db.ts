@@ -25,6 +25,8 @@ export const dbT = {
     await this.getCollections().postCollection.deleteMany({});
     await this.getCollections().userCollection.deleteMany({});
     await this.getCollections().commentCollection.deleteMany({});
+    await this.getCollections().refreshTokenBlackList.deleteMany({});
+
   },
   async stop() {
     await this.client.close();
@@ -36,6 +38,7 @@ export const dbT = {
       postCollection: this.getDbName().collection<PostViewModelTdb>(SETTINGS.POST_COLLECTION_NAME),
       userCollection: this.getDbName().collection<userDb>(SETTINGS.USER_COLLECTION_NAME),
       commentCollection: this.getDbName().collection<CommentViewModelDb>(SETTINGS.COMMENT_COLLECTION_NAME),
+      refreshTokenBlackList: this.getDbName().collection<{ refreshToken: string }>(SETTINGS.REFRESH_TOKEN_BLACK_LIST),
     };
   },
 };

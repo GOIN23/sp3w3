@@ -18,5 +18,7 @@ export const authTokenMiddleware = async (req: Request, res: Response, next: Nex
     next();
     return;
   }
+
+  
   res.sendStatus(401);
 };

@@ -27,6 +27,7 @@ export type LoginInputModel = {
 
 export type LoginSuccessViewModel = {
   accessToken: string;
+  refreshToken:string
 };
 
 export type MeViewModel = {

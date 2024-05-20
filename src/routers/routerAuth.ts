@@ -14,8 +14,11 @@ export const routerAuth = () => {
   router.post("/login", validaloginOrEmail, validaPassword, validaError, async (req: Request, res: Response) => {
     const user = await usersService.checkCreadentlais(req.body.loginOrEmail, req.body.password);
     if (user) {
-      const token = await jwtService.createJwt(user);
-      res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send(token);
+      const { accessToken, refreshToken } = await jwtService.createJwt(user._id);
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+      });
+      res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send({accessToken:accessToken});
       return;
     } else {
       res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_401);
@@ -43,6 +46,21 @@ export const routerAuth = () => {
     // @ts-ignore
     const user = await usersService.findUsers(req.userId);
     res.status(200).send({ email: user?.email, login: user?.login, userId: req.userId });
+  });
+
+  router.post("/refresh-token", async (req: Request, res: Response) => {
+    const refreshToken: string = req.cookies.refreshToken;
+
+    const JWT = await jwtService.updateToken(refreshToken);
+
+    if (!JWT) {
+      res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_401);
+      return;
+    }
+    res.cookie("refreshToken", JWT.refreshToken, {
+      httpOnly: true,
+    });
+    res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send({accessToken:JWT.accessToken});
   });
 
   return router;
