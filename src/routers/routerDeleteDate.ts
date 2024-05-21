@@ -9,6 +9,7 @@ export const routerDeletDate = () => {
     dbT.getCollections().postCollection.deleteMany({});
     dbT.getCollections().userCollection.deleteMany({});
     dbT.getCollections().commentCollection.deleteMany({});
+    dbT.getCollections().refreshTokenBlackList.deleteMany({});
 
     res.sendStatus(204);
     return;

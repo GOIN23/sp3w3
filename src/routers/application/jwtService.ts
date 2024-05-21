@@ -7,7 +7,7 @@ import { repositryAuth } from "../../repository/repositryAuth";
 
 export const jwtService = {
   async createJwt(id: string): Promise<LoginSuccessViewModel> {
-    const accessToken = jwt.sign({ userId: id }, SETTINGS.JWT_SECRET, { expiresIn: "1m" });
+    const accessToken = jwt.sign({ userId: id }, SETTINGS.JWT_SECRET, { expiresIn: "10s" });
     const refreshToken = await this.createRefreshToken(id);
 
     return {
@@ -23,9 +23,8 @@ export const jwtService = {
       return null;
     }
   },
-
   async createRefreshToken(id: string): Promise<string> {
-    const refreshToken = jwt.sign({ userId: id }, SETTINGS.JWT_SECRET, { expiresIn: "2m" });
+    const refreshToken = jwt.sign({ userId: id }, SETTINGS.JWT_SECRET, { expiresIn: "20s" });
     return refreshToken;
   },
   async updateToken(token: string): Promise<LoginSuccessViewModel | null> {
@@ -36,11 +35,34 @@ export const jwtService = {
     }
     await repositryAuth.postRefreshTokenBlacKlist(token);
 
+    try {
+      const result: any = jwt.verify(token, SETTINGS.JWT_SECRET);
+      const newToken = await this.createJwt(result.userId);
 
-    const result: any = jwt.verify(token, SETTINGS.JWT_SECRET);
+      return newToken;
+    } catch (error) {
+      return null;
+    }
+  },
+  async addRefreshTokenBlacKlist(token: string) {
+    await repositryAuth.postRefreshTokenBlacKlist(token);
+  },
 
-    const newToken = await this.createJwt(result.userId);
+  async checkRefreshToken(refreshToken: string) {
+    const checkBlackListToken = await repositryAuth.getRefreshTokenBlacKlist(refreshToken);
 
-    return newToken;
+    if (checkBlackListToken) {
+      return null;
+    }
+
+    try {
+      const result: any = jwt.verify(refreshToken, SETTINGS.JWT_SECRET);
+      const newToken = await this.createJwt(result.userId);
+      await repositryAuth.postRefreshTokenBlacKlist(refreshToken);
+
+      return newToken;
+    } catch (error) {
+      return null;
+    }
   },
 };

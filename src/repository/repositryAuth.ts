@@ -6,7 +6,6 @@ export const repositryAuth = {
   },
 
   async getRefreshTokenBlacKlist(token: string): Promise<string | null> {
-    debugger
     const oldToken = await dbT.getCollections().refreshTokenBlackList.findOne({ refreshToken: token });
 
     if (oldToken) {

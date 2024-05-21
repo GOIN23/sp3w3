@@ -13,17 +13,31 @@ export const routerAuth = () => {
 
   router.post("/login", validaloginOrEmail, validaPassword, validaError, async (req: Request, res: Response) => {
     const user = await usersService.checkCreadentlais(req.body.loginOrEmail, req.body.password);
-    if (user) {
-      const { accessToken, refreshToken } = await jwtService.createJwt(user._id);
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-      });
-      res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send({accessToken:accessToken});
-      return;
-    } else {
+    if (!user) {
       res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_401);
       return;
     }
+
+    const { accessToken, refreshToken } = await jwtService.createJwt(user._id);
+
+    res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true });
+
+    res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send({ accessToken: accessToken });
+  });
+
+  router.post("/logout", async (req: Request, res: Response) => {
+    const refreshToken: string = req.cookies.refreshToken;
+    const userId = await jwtService.checkRefreshToken(refreshToken);
+
+    if (!userId) {
+      res.sendStatus(401);
+
+      return;
+    }
+
+    await jwtService.addRefreshTokenBlacKlist(refreshToken);
+
+    res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_204);
   });
 
   router.post("/registration", validaLoginPasswordEmail, validabAuthdLoginCustm, validabAuthdEmailCustm, validaError, async (req: Request, res: Response) => {
@@ -49,7 +63,7 @@ export const routerAuth = () => {
   });
 
   router.post("/refresh-token", async (req: Request, res: Response) => {
-    const refreshToken: string = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
 
     const JWT = await jwtService.updateToken(refreshToken);
 
@@ -57,10 +71,9 @@ export const routerAuth = () => {
       res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_401);
       return;
     }
-    res.cookie("refreshToken", JWT.refreshToken, {
-      httpOnly: true,
-    });
-    res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send({accessToken:JWT.accessToken});
+    res.cookie("refreshToken", JWT.refreshToken, { httpOnly: true, secure: true });
+
+    res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send({ accessToken: JWT.accessToken });
   });
 
   return router;
