@@ -7,6 +7,7 @@ import { authTokenMiddleware } from "../auth/authTokenMiddleware";
 import { validaError } from "../validation/generalvValidation";
 import { authService } from "../services/auth-service";
 import { validabAuthdCodeCustm, validabAuthdEmailCustm, validabAuthdLoginCustm, validabAuthdresendingCodeCustm } from "../validation/validatAuth";
+import { errorValid } from "../utilt/errors";
 
 export const routerAuth = () => {
   const router = express.Router();
