@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { UserInputModel, UserViewModelConfidential, userDb } from "../../src/types/typeUser";
+import { UserInputModel, UserViewModel2, UserViewModelConfidential, UserViewModelManagerTest, userDb } from "../../src/types/typeUser";
 import { ObjectId } from "mongodb";
 import { randomUUID } from "crypto";
 import { add } from "date-fns";
@@ -8,7 +8,7 @@ import { repositoryUsers } from "../../src/repository/repostiryUsers";
 import { usersService } from "../../src/services/users-service";
 
 export const managerTestUser = {
-  async registerUser(outputLogin: any, isConfirEmail?: boolean) {
+  async registerUser(outputLogin: any, isConfirEmail?: boolean):Promise<UserViewModel2 | UserViewModelManagerTest > {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await usersService._generatHash(outputLogin.password, passwordSalt);
 

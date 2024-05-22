@@ -7,6 +7,8 @@ import { app } from "../../src/app";
 import request from "supertest";
 import { SETTINGS } from "../../src/seting/seting";
 import { repositoryUsers } from "../../src/repository/repostiryUsers";
+import { usersService } from "../../src/services/users-service";
+import { jwtService } from "../../src/routers/application/jwtService";
 
 describe("Auth-integration", () => {
   beforeAll(async () => {
@@ -21,7 +23,7 @@ describe("Auth-integration", () => {
     await dbT.stop();
   });
 
-  describe("USER-REGISTRITION", () => {
+  describe("authentication", () => {
     const registerUserUseCase = authService.creatUser.bind(authService);
     it("registration correct", async () => {
       emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
@@ -111,6 +113,111 @@ describe("Auth-integration", () => {
       expect(result).toBe(null); //Вернет null, так как authService.resendingCode() в случае если не найдет email или login, он возвращается null
 
       expect(emailAdapter.sendEmail).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("authorization", () => {
+    const registerUserUseCase = authService.creatUser.bind(authService);
+    it("+ auth/login. Successful login", async () => {
+      emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
+        return true;
+      });
+
+      const dto = managerTestUser.creatUserDto();
+      await registerUserUseCase(dto);
+
+      const result = await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({
+          loginOrEmail: dto.login,
+          password: dto.password,
+        })
+        .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
+
+      expect(result.body).toEqual({
+        accessToken: expect.any(String),
+      });
+
+      expect(result.headers["set-cookie"]).toBeDefined();
+
+      expect(emailAdapter.sendEmail).toHaveBeenCalled();
+      expect(emailAdapter.sendEmail).toHaveBeenCalledTimes(1);
+    });
+    it("- auth/login. The check failed due to the absence of this user", async () => {
+      await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({
+          loginOrEmail: "DSFSS",
+          password: "FSFSFS",
+        })
+        .expect(SETTINGS.HTTPCOD.HTTPCOD_401);
+    });
+    it("+ auth/logout. Successful exit", async () => {
+      emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
+        return true;
+      });
+
+      const dto = managerTestUser.creatUserDto();
+      await registerUserUseCase(dto);
+
+      const result = await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({
+          loginOrEmail: dto.login,
+          password: dto.password,
+        })
+        .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
+
+      await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", result.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_204);
+    });
+    it("- auth/logout. Went out refreshToken", async () => {
+      emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
+        return true;
+      });
+
+      const dto = managerTestUser.creatUserDto();
+      await registerUserUseCase(dto);
+
+      const result = await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({
+          loginOrEmail: dto.login,
+          password: dto.password,
+        })
+        .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
+
+      const refreshToken = result.headers["set-cookie"].toString().split(";")[0].split("=")[1];
+
+      await jwtService.addRefreshTokenBlacKlist(refreshToken);
+
+      await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", result.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_401);
+    });
+    it("+ auth/refresh-token. Successful token update", async () => {
+      emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
+        return true;
+      });
+
+      const dto = managerTestUser.creatUserDto();
+      await registerUserUseCase(dto);
+
+      const result = await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({
+          loginOrEmail: dto.login,
+          password: dto.password,
+        })
+        .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
+
+      const newToken = await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/refresh-token`)
+        .set("Cookie", result.headers["set-cookie"])
+        .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
+
+
+        console.log(newToken.headers["set-cookie"],"dssdsdsdsd sdsds")
+
+      await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", result.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_401);
+      // await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", newToken.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_204);
     });
   });
 });

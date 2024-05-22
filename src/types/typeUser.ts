@@ -11,13 +11,13 @@ export type UserViewModel = {
   createdAt: string;
 };
 
-
 export type UserViewModel2 = {
   id: string;
   login: string;
   email: string;
   createdAt: string;
 };
+
 export type UserViewModelConfidential = {
   _id: string;
   login: string;
@@ -44,20 +44,25 @@ export type qureUsers = {
   pageSize: number;
 };
 
-
 export type emailConfirmation = {
-  confirmationCode:string,
-  expirationDate:Date,
-  isConfirmed:boolean
-}
+  confirmationCode: string;
+  expirationDate: Date;
+  isConfirmed: boolean;
+};
 
-export type userDb ={
-  _id:string,
+export type userDb = {
+  _id: string;
   login: string;
   email: string;
   createdAt: string;
   passwordHash: string;
   passwordSalt: string;
-  emailConfirmation:emailConfirmation
+  emailConfirmation: emailConfirmation;
+};
 
-}
+export type UserViewModelManagerTest = {
+  id: string;
+  login: string;
+  email: string;
+  emailConfirmation: emailConfirmation;
+};
