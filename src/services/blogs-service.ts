@@ -1,11 +1,11 @@
+import { ObjectId } from "mongodb";
 import { repositoryBlogs } from "../repository/repositoryBlogs";
-import { BlogInputModelT, BlogViewModelT, dbBl } from "../types/typeBlog";
+import { BlogInputModelT, BlogViewModelDbT, BlogViewModelT, dbBl } from "../types/typeBlog";
 
 export const blogsService = {
   async createBlogs(body: BlogInputModelT): Promise<BlogViewModelT | null> {
-    let idBlogs = Math.random();
-    const newBlog: BlogViewModelT = {
-      id: idBlogs.toString(),
+    const newBlog: BlogViewModelDbT = {
+      _id: String(new ObjectId()),
       name: body.name,
       description: body.description,
       websiteUrl: body.websiteUrl,
@@ -15,7 +15,7 @@ export const blogsService = {
 
     await repositoryBlogs.createBlogs(newBlog);
 
-    const newBLogFind = await this.findBlogs(newBlog.id);
+    const newBLogFind = await this.findBlogs(newBlog._id);
 
     return newBLogFind;
   },

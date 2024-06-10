@@ -1,13 +1,11 @@
 import { app } from "./../../src/app";
 import { dbT } from "./../../src/db/mongo-.db";
-import { body } from "express-validator";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import request from "supertest";
 import { SETTINGS } from "../../src/seting/seting";
 import { BlogViewModelT, PaginatorBlog } from "../../src/types/typeBlog";
 import { PostViewModelT } from "../../src/types/typePosts";
 import { ADMIN_AUTH } from "../../src/auth/authMiddleware";
-import { testGet } from "../utilitTest/testGet";
 import { managerTestBlogs } from "../utilitTest/managerTestBlogs";
 
 let blogsTest: PaginatorBlog = { pagesCount: 0, page: 1, pageSize: 10, totalCount: 0, items: [] };

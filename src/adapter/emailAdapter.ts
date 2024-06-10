@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import { userDb } from "../types/typeUser";
 
 export const emailAdapter = {
-  async sendEmail(userCode: string, email: string) {
+  async sendEmail(userCode: string, email: string, recoverePasswordCode?: string) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
 
@@ -11,6 +11,21 @@ export const emailAdapter = {
         pass: "hmoi odon lzcv rbgc",
       },
     });
+
+    if (recoverePasswordCode) {
+      const info = await transporter.sendMail({
+        from: "alida", // sender address
+        to: email, // list of receivers
+        subject: "Hello ✔", // Subject line
+        html: `
+        <h1>Thank for your registration</h1>
+        <p>To finish password recovery please follow the link below:
+          <a href='https://somesite.com/password-recovery?recoveryCode=${recoverePasswordCode}'>recovery password</a>
+      </p>`,
+      });
+
+      return info;
+    }
     const info = await transporter.sendMail({
       from: "alida", // sender address
       to: email, // list of receivers
@@ -24,4 +39,8 @@ export const emailAdapter = {
 
     return info;
   },
+
+  async sendEmailRecovePassword(){
+    
+  }
 };

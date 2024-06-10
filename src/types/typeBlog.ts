@@ -7,6 +7,15 @@ export type BlogViewModelT = {
   isMembership: boolean;
 };
 
+export type BlogViewModelDbT = {
+  _id:string
+  name: string;
+  description: string;
+  websiteUrl: string;
+  createdAt: string;
+  isMembership: boolean;
+};
+
 
 export type BlogInputModelT = {
   name: string;

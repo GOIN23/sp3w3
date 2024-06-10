@@ -71,7 +71,6 @@ export const routerBlogs = () => {
     }
     res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send(result);
   });
-
   router.get(
     "/:id/posts",
     validaQursortDirection,
@@ -92,24 +91,22 @@ export const routerBlogs = () => {
       res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send(resultq);
     }
   );
-
   router.put("/:id", authMiddleware, validaNameBlogs, validaDescriptionBlogs, validaWebsiteUrlBlogs, async (req: Request, res: Response) => {
     let result = await blogsService.findBlogs(req.params.id);
-    if (!result) {
-      res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_404);
-      return;
-    }
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json(errorValid(errors.array({ onlyFirstError: true })));
-      return;
-    }
+   if (!result) {
+     res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_404);
+     return;
+   }
+   const errors = validationResult(req);
+   if (!errors.isEmpty()) {
+     res.status(400).json(errorValid(errors.array({ onlyFirstError: true })));
+     return;
+   }
 
-    await blogsService.updatBlogs(req.body, req.params.id);
-    res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_204);
-    return;
-  });
-
+   await blogsService.updatBlogs(req.body, req.params.id);
+   res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_204);
+   return;
+ });
   router.delete("/:id", authMiddleware, async (req: Request, res: Response) => {
     let result = await blogsService.findBlogs(req.params.id);
     if (!result) {

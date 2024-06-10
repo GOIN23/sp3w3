@@ -1,4 +1,6 @@
+import { SortDirection } from "mongodb";
 import { dbT } from "../db/mongo-.db";
+import { postModel } from "../mongoose/module";
 import { BlogViewModelT, PaginatorBlog } from "../types/typeBlog";
 import { PaginatorPosts, PostViewModelT, PostViewModelTdb } from "../types/typePosts";
 
@@ -9,15 +11,13 @@ export const qreposttoryPosts = {
       ...search,
     };
     try {
-      const items: PostViewModelTdb[] = (await dbT
-        .getCollections()
-        .postCollection.find({})
-        .sort(query.sortBy, query.sortDirection)
+      const items: PostViewModelTdb[] = await postModel
+        .find({})
+        .sort({ [query.sortBy]: query.sortDirection as SortDirection })
         .skip((+query.pageNumber - 1) * +query.pageSize)
-        .limit(+query.pageSize)
-        .toArray()) ;
+        .limit(+query.pageSize);
 
-      const totalCount = await dbT.getCollections().postCollection.countDocuments(filter);
+      const totalCount = await postModel.countDocuments(filter);
 
       const mapPosts: PostViewModelT[] = items.map((post: PostViewModelTdb) => {
         return {

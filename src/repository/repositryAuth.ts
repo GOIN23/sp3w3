@@ -1,6 +1,7 @@
 import { DeviceViewModel } from "./../types/generalType";
 import { dbT } from "../db/mongo-.db";
 import { CustomRateLimitT, userSessionT } from "../types/generalType";
+import { CustomRateLimitTModel, DeviceViewModelMong, passwordRecoveryCodeModule, userModule } from "../mongoose/module";
 
 export const repositryAuth = {
   async postRefreshTokenBlacKlist(token: string) {
@@ -29,13 +30,13 @@ export const repositryAuth = {
     return result;
   },
   async addSesionUser(userSession: DeviceViewModel) {
-    await dbT.getCollections().sesionsUser.insertOne(userSession);
+    await DeviceViewModelMong.insertMany(userSession);
   },
   async updateSesionUser(iat: string, userId: string, diveceId: string) {
-    await dbT.getCollections().sesionsUser.updateOne({ userId: userId, deviceId: diveceId }, { $set: { lastActiveDate: iat } });
+    await DeviceViewModelMong.updateOne({ userId: userId, deviceId: diveceId }, { $set: { lastActiveDate: iat } });
   },
   async findRottenSessions(userId: string, deviceId: string) {
-    const userSesion = await dbT.getCollections().sesionsUser.findOne({
+    const userSesion = await DeviceViewModelMong.findOne({
       userId: userId,
       deviceId: deviceId,
     });
@@ -43,7 +44,7 @@ export const repositryAuth = {
     return userSesion;
   },
   async getSesions(userId: string) {
-    const sesionsDivece = await dbT.getCollections().sesionsUser.find({ userId: userId }).toArray();
+    const sesionsDivece = await DeviceViewModelMong.find({ userId: userId });
     const mapDateSesio = sesionsDivece.map((d) => {
       return {
         deviceId: d.deviceId,
@@ -55,16 +56,30 @@ export const repositryAuth = {
     return mapDateSesio;
   },
   async getSesionsId(deviceId: string) {
-    const sesionsDivece = await dbT.getCollections().sesionsUser.findOne({ deviceId: deviceId });
+    const sesionsDivece = await DeviceViewModelMong.findOne({ deviceId: deviceId });
     return sesionsDivece;
   },
+  async postPasswordRecoveryCode(code: string, email: string) {
+    try {
+      await passwordRecoveryCodeModule.insertMany({ code: code, email: email });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async checkPasswordRecoveryCode(code: string) {
+    const result = await passwordRecoveryCodeModule.findOne({ code: code });
+    return result;
+  },
+  async updatePassword(email: string, newPasswordHash: string, newPasswordSalt: string): Promise<void> {
+    await userModule.updateOne({ email: email }, { $set: { passwordHash: newPasswordHash, passwordSalt: newPasswordSalt } });
+  },
   async deleteSesions(deviceId: string) {
-    await dbT.getCollections().sesionsUser.deleteMany({ deviceId: { $ne: deviceId } });
+    await DeviceViewModelMong.deleteMany({ deviceId: { $ne: deviceId } });
   },
   async deleteSesionsId(deviceId: string) {
-    await dbT.getCollections().sesionsUser.deleteOne({ deviceId: deviceId });
+    await DeviceViewModelMong.deleteOne({ deviceId: deviceId });
   },
   async completelyRemoveSesion(deviceId: string, userId: string) {
-    await dbT.getCollections().sesionsUser.deleteOne({ deviceId: deviceId, userId: userId });
+    await DeviceViewModelMong.deleteOne({ deviceId: deviceId, userId: userId });
   },
 };

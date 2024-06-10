@@ -1,9 +1,10 @@
 import { PostViewModelT, PostViewModelTdb } from "./../types/typePosts";
 import { dbT } from "../db/mongo-.db";
 import { qureT } from "../types/generalType";
-import { BlogViewModelT, PaginatorBlog } from "../types/typeBlog";
+import { BlogViewModelDbT, BlogViewModelT, PaginatorBlog } from "../types/typeBlog";
 import { SortDirection } from "mongodb";
 import { PaginatorPosts } from "../types/typePosts";
+import { blogModel, postModel } from "../mongoose/module";
 
 export const qreposttoryBlogs = {
   async getBlogs(query: qureT): Promise<PaginatorBlog | { error: string }> {
@@ -12,22 +13,30 @@ export const qreposttoryBlogs = {
       ...search,
     };
     try {
-      const items: any = (await dbT
-        .getCollections()
-        .blogCollection.find(filter, { projection: { _id: 0 } })
-        .sort(query.sortBy, query.sortDirection as SortDirection)
+      const items: BlogViewModelDbT[] = await blogModel
+        .find(filter)
+        .sort({ [query.sortBy]: query.sortDirection as SortDirection })
         .skip((query.pageNumber - 1) * query.pageSize)
-        .limit(query.pageSize)
-        .toArray()) as any[];
+        .limit(query.pageSize);
 
-      const totalCount = await dbT.getCollections().blogCollection.countDocuments(filter);
+      const totalCount = await blogModel.countDocuments(filter);
 
+      const mapBlogs: BlogViewModelT[] = items.map((blog: BlogViewModelDbT) => {
+        return {
+          id: blog._id,
+          createdAt: blog.createdAt,
+          description: blog.description,
+          isMembership: blog.isMembership,
+          name: blog.name,
+          websiteUrl: blog.websiteUrl,
+        };
+      });
       return {
         pagesCount: Math.ceil(totalCount / query.pageSize),
         page: query.pageNumber,
         pageSize: query.pageSize,
         totalCount,
-        items: items,
+        items: mapBlogs,
       };
     } catch (e) {
       return { error: "some error" };
@@ -42,15 +51,13 @@ export const qreposttoryBlogs = {
       ...search,
     };
     try {
-      const items: PostViewModelTdb[] = (await dbT
-        .getCollections()
-        .postCollection.find(filter)
-        .sort(query.sortBy, query.sortDirection)
+      const items: PostViewModelTdb[] = await postModel
+        .find(filter)
+        .sort({ [query.sortBy]: query.sortDirection as SortDirection })
         .skip((query.pageNumber - 1) * query.pageSize)
-        .limit(query.pageSize)
-        .toArray()) as any[];
+        .limit(query.pageSize);
 
-      const totalCount = await dbT.getCollections().postCollection.countDocuments(filter);
+      const totalCount = await postModel.countDocuments(filter);
 
       const mapPosts: PostViewModelT[] = items.map((post: PostViewModelTdb) => {
         return {

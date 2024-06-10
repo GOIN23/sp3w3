@@ -11,7 +11,7 @@ export const SETTINGS = {
     USERS: "/api/users",
     AUTH: "/api/auth",
     COMMENTES: "/api/comments",
-    SECURITY:"/api/security"
+    SECURITY: "/api/security",
   },
   HTTPCOD: {
     HTTPCOD_200: 200,
@@ -32,5 +32,6 @@ export const SETTINGS = {
   COMMENT_COLLECTION_NAME: "comments",
   REFRESH_TOKEN_BLACK_LIST: "refreshToken",
   CUSTOM_RATEL_LIMIT: "customRateLimit",
-  SESION_USER:"sesionUser"
+  SESION_USER: "sesionUser",
+  RECOVERY_PASSWORD_CODE: "passwordRecoveryCode",
 };

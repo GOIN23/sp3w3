@@ -9,7 +9,7 @@ import { sesionsService } from "./sesionsService";
 export const jwtService = {
   async createJwt(id: string, ip: string | undefined, title: string | undefined): Promise<LoginSuccessViewModel> {
     const deviceId = String(new ObjectId());
-    const accessToken = jwt.sign({ userId: id }, SETTINGS.JWT_SECRET, { expiresIn: "10s" });
+    const accessToken = jwt.sign({ userId: id }, SETTINGS.JWT_SECRET, { expiresIn: "30s" });
     const refreshToken = await this.createRefreshToken(id, deviceId);
     const result: any = jwt.verify(refreshToken, SETTINGS.JWT_SECRET);
 

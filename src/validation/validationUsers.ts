@@ -12,4 +12,6 @@ export const validaLoginPasswordEmail = checkExact([
   body("email").trim().exists().isString().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"),
 ]);
 
+export const validatPassword = body("newPassword").trim().exists().isString().isLength({ max: 20, min: 6 });
+
 export const validaEmail = body("email").trim().exists().isString().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$");

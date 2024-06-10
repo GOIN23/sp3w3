@@ -1,44 +1,40 @@
 import { ObjectId } from "mongodb";
 import { dbT } from "../db/mongo-.db";
 import { UserViewModel, UserViewModelConfidential, userDb } from "../types/typeUser";
+import { userModule } from "../mongoose/module";
 
 export const repositoryUsers = {
-  async createUsers(newUser: userDb): Promise<any> {
-    const res = await dbT.getCollections().userCollection.insertOne(newUser);
-
-    return res.insertedId;
+  async createUsers(newUser: userDb): Promise<void> {
+    await userModule.insertMany(newUser);
   },
   async findUsers(id: string | undefined): Promise<UserViewModel | null> {
-    const result = await dbT.getCollections().userCollection.findOne({ _id: id });
+    const result = await userModule.findOne({ _id: id });
     if (!result) {
       return null;
     }
     return result;
   },
-  async findBlogOrEmail(loginOrEmail: string): Promise<userDb | null> {
-    const user = await dbT.getCollections().userCollection.findOne({ $or: [{ login: loginOrEmail }, { email: loginOrEmail }] });
+  async findBlogOrEmail(loginOrEmail: string): Promise<any | null> {
+    const user = await userModule.findOne({ $or: [{ login: loginOrEmail }, { email: loginOrEmail }] });
 
     return user;
   },
-
   async updateConfirmation(id: string) {
-    const user = await dbT.getCollections().userCollection.updateOne({ _id: id }, { $set: { "emailConfirmation.isConfirmed": true } });
+    const user = await userModule.updateOne({ _id: id }, { $set: { "emailConfirmation.isConfirmed": true } });
 
     return user.modifiedCount === 1;
   },
-
   async findUserByConfirEmail(code: string) {
-    const user = await dbT.getCollections().userCollection.findOne({ "emailConfirmation.confirmationCode": code });
+    const user = await userModule.findOne({ "emailConfirmation.confirmationCode": code });
 
     return user;
   },
-
- async updateCodeUserByConfirEmail(userID:string,code: string) {
-    const user = await dbT.getCollections().userCollection.updateOne({ _id: userID }, { $set: { "emailConfirmation.confirmationCode": code }});
+  async updateCodeUserByConfirEmail(userID: string, code: string) {
+    const user = await userModule.updateOne({ _id: userID }, { $set: { "emailConfirmation.confirmationCode": code } });
 
     return user;
   },
   async deleteBlogs(id: string): Promise<void> {
-    await dbT.getCollections().userCollection.deleteOne({ _id: id });
+    await userModule.deleteOne({ _id: id });
   },
 };

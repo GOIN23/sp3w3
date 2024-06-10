@@ -1,22 +1,26 @@
 import { dbT } from "../db/mongo-.db";
+import { commentModel, postModel } from "../mongoose/module";
 import { CommentInputModel, CommentViewModel, CommentViewModelDb } from "../types/typeCommen";
 import { PostViewModelT, PostInputModelT, PostViewModelTdb } from "../types/typePosts";
 
 export const repositoryPosts = {
   async creatPosts(body: PostViewModelTdb): Promise<void> {
-    await dbT.getCollections().postCollection.insertOne(body);
+    await postModel.insertMany(body);
   },
   async createCommentPost(body: CommentViewModelDb): Promise<void> {
-    await dbT.getCollections().commentCollection.insertOne(body);
+    await commentModel.insertMany(body);
   },
   async findCommentPosts(id: string): Promise<CommentViewModel | null> {
-    const result = await dbT.getCollections().commentCollection.findOne({ _id: id });
+    const result = await commentModel.findOne({ _id: id });
     if (!result) {
       return null;
     }
     const mapData: CommentViewModel = {
       id: result._id,
-      commentatorInfo: result.commentatorInfo,
+      commentatorInfo: {
+        userId: result.commentatorInfo.userId,
+        userLogin: result.commentatorInfo.userLogin,
+      },
       content: result.content,
       createdAt: result.createdAt,
     };
@@ -24,11 +28,10 @@ export const repositoryPosts = {
     return mapData;
   },
   async updatCommentPosts(body: CommentInputModel, id: string): Promise<void> {
-    await dbT.getCollections().commentCollection.updateOne({ _id: id }, { $set: { content: body.content } });
+    await commentModel.updateOne({ _id: id }, { $set: { content: body.content } });
   },
-
   async findPosts(id: string): Promise<PostViewModelT | null> {
-    const result = await dbT.getCollections().postCollection.findOne({ _id: id });
+    const result = await postModel.findOne({ _id: id });
     if (!result) {
       return null;
     }
@@ -42,20 +45,16 @@ export const repositoryPosts = {
       createdAt: result.createdAt,
     };
   },
-
   async updatPosts(body: PostInputModelT, id: string): Promise<void> {
-    await dbT
-      .getCollections()
-      .postCollection.updateOne(
-        { _id: id },
-        { $set: { content: body.content, blogId: body.blogId, shortDescription: body.shortDescription, title: body.title } }
-      );
+    await postModel.updateOne(
+      { _id: id },
+      { $set: { content: body.content, blogId: body.blogId, shortDescription: body.shortDescription, title: body.title } }
+    );
   },
-
   async deleteCommentPosts(id: string): Promise<void> {
-    await dbT.getCollections().commentCollection.deleteOne({ _id: id });
+    await postModel.deleteOne({ _id: id });
   },
   async deletePosts(id: string): Promise<void> {
-    await dbT.getCollections().postCollection.deleteOne({ _id: id });
+    await postModel.deleteOne({ _id: id });
   },
 };

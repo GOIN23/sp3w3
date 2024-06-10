@@ -46,7 +46,7 @@ export const authService = {
     };
   },
   async confirmEmail(code: string) {
-    const user = await repositoryUsers.findUserByConfirEmail(code);
+    const user: any = await repositoryUsers.findUserByConfirEmail(code);
 
     if (!user) {
       return null;
@@ -77,6 +77,30 @@ export const authService = {
     } catch (error) {
       console.log(error);
     }
+    return true;
+  },
+  async passwordRecovery(email: string) {
+    const passwordRecoveryCode = randomUUID();
+
+    await repositryAuth.postPasswordRecoveryCode(passwordRecoveryCode, email);
+    
+    try {
+      await emailAdapter.sendEmail("null", email, passwordRecoveryCode);
+    } catch (e) {
+      console.log(e);
+    }
+  },
+  async checkPasswordRecovery(code: string, newPassword: string) {
+    const result = await repositryAuth.checkPasswordRecoveryCode(code);
+
+    if (!result) {
+      return false;
+    }
+    const passwordSalt = await bcrypt.genSalt(10);
+    const passwordHash = await this._generatHash(newPassword, passwordSalt);
+
+    await repositryAuth.updatePassword(result.email, passwordHash, passwordSalt);
+
     return true;
   },
   async _generatHash(password: string, salt: string) {

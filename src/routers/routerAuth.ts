@@ -2,15 +2,12 @@ import { countreQureyValidation } from "../validation/countreQureyValidation";
 import express, { Request, Response } from "express";
 import { usersService } from "../services/users-service";
 import { SETTINGS } from "../seting/seting";
-import { validaEmail, validaLoginPasswordEmail, validaPassword, validaloginOrEmail } from "../validation/validationUsers";
+import { validaEmail, validaLoginPasswordEmail, validaPassword, validaloginOrEmail, validatPassword } from "../validation/validationUsers";
 import { jwtService } from "./application/jwtService";
 import { authTokenMiddleware } from "../auth/authTokenMiddleware";
 import { validaError } from "../validation/generalvValidation";
 import { authService } from "../services/auth-service";
 import { validabAuthdCodeCustm, validabAuthdEmailCustm, validabAuthdLoginCustm, validabAuthdresendingCodeCustm } from "../validation/validatAuth";
-import { errorValid } from "../utilt/errors";
-import {  DeviceViewModel } from "../types/generalType";
-import { ObjectId } from "mongodb";
 import { authRefreshTokenMiddleware } from "../auth/authRefreshTokenMiddleware";
 import { sesionsService } from "./application/sesionsService";
 
@@ -35,7 +32,7 @@ export const routerAuth = () => {
   router.post("/logout", authRefreshTokenMiddleware, async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
 
-    await sesionsService.completelyRemoveSesion(refreshToken)
+    await sesionsService.completelyRemoveSesion(refreshToken);
     res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_204);
   });
 
@@ -47,7 +44,6 @@ export const routerAuth = () => {
     validabAuthdEmailCustm,
     validaError,
     async (req: Request, res: Response) => {
-   
       await authService.creatUser(req.body);
 
       res.status(204).send("Input data is accepted. Email with confirmation code will be send to passed email address");
@@ -55,7 +51,6 @@ export const routerAuth = () => {
   );
 
   router.post("/registration-confirmation", countreQureyValidation, validabAuthdCodeCustm, validaError, async (req: Request, res: Response) => {
-
     res.sendStatus(204);
   });
 
@@ -70,6 +65,30 @@ export const routerAuth = () => {
       return;
     }
   );
+
+  router.post("/password-recovery", countreQureyValidation, validaEmail, validaError, async (req: Request, res: Response) => {
+    await authService.passwordRecovery(req.body.email);
+
+    res.sendStatus(204);
+  });
+
+  router.post("/new-password", countreQureyValidation, validatPassword, validaError, async (req: Request, res: Response) => {
+    const result = await authService.checkPasswordRecovery(req.body.recoveryCode, req.body.newPassword);
+
+    if (!result) {
+      res.status(400).send({
+        errorsMessages: [
+          {
+            message: "dsds",
+            field: "recoveryCode",
+          },
+        ],
+      });
+      return;
+    }
+
+    res.sendStatus(204);
+  });
 
   router.get("/me", authTokenMiddleware, async (req: Request, res: Response) => {
     // @ts-ignore
