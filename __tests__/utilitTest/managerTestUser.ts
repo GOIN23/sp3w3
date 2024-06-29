@@ -4,8 +4,7 @@ import { UserInputModel, UserViewModel2, UserViewModelConfidential, UserViewMode
 import { ObjectId } from "mongodb";
 import { randomUUID } from "crypto";
 import { add } from "date-fns";
-import { repositoryUsers } from "../../src/repository/repostiryUsers";
-import { usersService } from "../../src/services/users-service";
+import { repositryUsers, usersService } from "../../src/composition/composition-rootUsers";
 
 export const managerTestUser = {
   async registerUser(outputLogin: any, isConfirEmail?: boolean):Promise<UserViewModel2 | UserViewModelManagerTest > {
@@ -13,7 +12,7 @@ export const managerTestUser = {
     const passwordHash = await usersService._generatHash(outputLogin.password, passwordSalt);
 
     const newUser: userDb = {
-      _id: String(new ObjectId()),
+      _id: new ObjectId().toString(),
       login: outputLogin.login,
       passwordHash,
       passwordSalt,
@@ -29,7 +28,8 @@ export const managerTestUser = {
       createdAt: new Date().toISOString(),
     };
 
-    await repositoryUsers.createUsers(newUser);
+    await repositryUsers.createUsers(newUser);
+    
     if (isConfirEmail) {
       return {
         id: newUser._id,
@@ -46,7 +46,6 @@ export const managerTestUser = {
       createdAt: newUser.createdAt,
     };
   },
-
   creatUserDto(): UserInputModel {
     return {
       login: "testing23",

@@ -1,11 +1,12 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { dbT } from "../../src/db/mongo-.db";
+import { dbStart, dbT } from "../../src/db/mongo-.db";
 import request from "supertest";
 import { app } from "../../src/app";
 import { SETTINGS } from "../../src/seting/seting";
 import { managerTestBlogs } from "../utilitTest/managerTestBlogs";
 import { managerTestPosts } from "../utilitTest/managerTestPosts";
 import { managerTestUser } from "../utilitTest/managerTestUser";
+import mongoose from "mongoose";
 
 
 
@@ -14,13 +15,17 @@ import { managerTestUser } from "../utilitTest/managerTestUser";
 describe("checking endpoint on path /api/comments", () => {
     beforeAll(async () => {
         const mongoServer = await MongoMemoryServer.create();
-        await dbT.run(mongoServer.getUri());
+        await dbStart(mongoServer.getUri())
     });
     afterAll(async () => {
-        await dbT.stop();
+        try {
+            await mongoose.disconnect();
+        } catch (error) {
+            console.error("Error while disconnecting from MongoDB:", error);
+        }
     });
     afterEach(async () => {
-        await dbT.drop();
+        await request(app).delete(SETTINGS.PATH.ALLDATA)
     })
 
     it("- GET products", async () => {
@@ -63,7 +68,7 @@ describe("checking endpoint on path /api/comments", () => {
             .expect(SETTINGS.HTTPCOD.HTTPCOD_401);
     })
     it("- PUT not found", async () => {
-        const user = await managerTestUser.registerUser({
+        await managerTestUser.registerUser({
             email: "4e5.kn@mail.ru",
             login: "fsasasfas",
             password: "string",
@@ -77,13 +82,14 @@ describe("checking endpoint on path /api/comments", () => {
 
 
         await request(app)
-            .put(`${SETTINGS.PATH.COMMENTES}/2312`)
+            .put(`${SETTINGS.PATH.COMMENTES}/fdsfsdfs`)
+            .set('Cookie', token.headers["set-cookie"])
             .set({ Authorization: "Bearer " + token.body.accessToken })
             .send({ content: "stringstringstringst" })
             .expect(SETTINGS.HTTPCOD.HTTPCOD_404);
     })
     it("+ PUT successful request", async () => {
-        const user = await managerTestUser.registerUser({
+        await managerTestUser.registerUser({
             email: "4e5.kn@mail.ru",
             login: "fsasasfas",
             password: "string",
@@ -111,12 +117,13 @@ describe("checking endpoint on path /api/comments", () => {
         const postComment = await managerTestPosts.creatCommentPostOne(token.body.accessToken, posts.id)
         await request(app)
             .put(`${SETTINGS.PATH.COMMENTES}/${postComment.id}`)
+            .set('Cookie', token.headers["set-cookie"])
             .set({ Authorization: "Bearer " + token.body.accessToken })
             .send({ content: "stringstringstringst" })
             .expect(SETTINGS.HTTPCOD.HTTPCOD_204);
     })
     it("- DELETE not found", async () => {
-        const user = await managerTestUser.registerUser({
+        await managerTestUser.registerUser({
             email: "4e5.kn@mail.ru",
             login: "fsasasfas",
             password: "string",
@@ -141,15 +148,16 @@ describe("checking endpoint on path /api/comments", () => {
             content: "blas asdsa",
         });
 
-        const postComment = await managerTestPosts.creatCommentPostOne(token.body.accessToken, posts.id)
+        await managerTestPosts.creatCommentPostOne(token.body.accessToken, posts.id)
 
         await request(app)
             .delete(`${SETTINGS.PATH.COMMENTES}/2312`)
+            .set('Cookie', token.headers["set-cookie"])
             .set({ Authorization: "Bearer " + token.body.accessToken })
             .expect(SETTINGS.HTTPCOD.HTTPCOD_404);
     })
     it("- DELETE Unauthorized", async () => {
-        const user = await managerTestUser.registerUser({
+        await managerTestUser.registerUser({
             email: "4e5.kn@mail.ru",
             login: "fsasasfas",
             password: "string",
@@ -181,7 +189,7 @@ describe("checking endpoint on path /api/comments", () => {
             .expect(SETTINGS.HTTPCOD.HTTPCOD_401);
     })
     it("+ DELETE successful request in id", async () => {
-        const user = await managerTestUser.registerUser({
+        await managerTestUser.registerUser({
             email: "4e5.kn@mail.ru",
             login: "fsasasfas",
             password: "string",
@@ -210,6 +218,7 @@ describe("checking endpoint on path /api/comments", () => {
 
         await request(app)
             .delete(`${SETTINGS.PATH.COMMENTES}/${postComment.id}`)
+            .set('Cookie', token.headers["set-cookie"])
             .set({ Authorization: "Bearer " + token.body.accessToken })
             .expect(SETTINGS.HTTPCOD.HTTPCOD_204);
     })

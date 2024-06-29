@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { jwtService } from "../routers/application/jwtService";
-import { usersService } from "../services/users-service";
+import { jwtService } from "../composition/composition-rootAuth";
 
 export const authRefreshTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies.refreshToken;
@@ -9,7 +8,9 @@ export const authRefreshTokenMiddleware = async (req: Request, res: Response, ne
     res.sendStatus(401);
     return;
   }
+  
   const checkRefreshToken = await jwtService.checkRefreshToken(refreshToken);
+
 
   if (!checkRefreshToken) {
     res.sendStatus(401);

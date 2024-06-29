@@ -1,16 +1,19 @@
 import { NextFunction, Request, Response } from "express";
-import { jwtService } from "../routers/application/jwtService";
-import { usersService } from "../services/users-service";
+import { jwtService } from "../composition/composition-rootAuth";
+import { usersService } from "../composition/composition-rootUsers";
 
 export const authTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const auth = req.headers.authorization as string;
   const refreshToken = req.cookies.refreshToken;
 
+
   if (!auth) {
     res.sendStatus(401);
     return;
   }
+
   const checkRefreshToken = await jwtService.checkRefreshToken(refreshToken);
+
 
   if (!checkRefreshToken) {
     res.sendStatus(401);
@@ -19,6 +22,8 @@ export const authTokenMiddleware = async (req: Request, res: Response, next: Nex
   }
 
   const token = req.headers.authorization!.split(" ")[1];
+
+  console.log(token, "tokentoken tokentokentoken")
   const userId = await jwtService.getUserIdByToken(token);
 
   if (userId) {

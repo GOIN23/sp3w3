@@ -2,7 +2,6 @@ import { body, query, validationResult } from "express-validator";
 import express, { NextFunction, Request, Response } from "express";
 import { SETTINGS } from "../seting/seting";
 import { errorValid } from "../utilt/errors";
-import { authService } from "../services/auth-service";
 
 export const validaQurePageSezi = query("pageSize").toInt().default(10);
 export const validaQureipageNumber = query("pageNumber").toInt().default(1);

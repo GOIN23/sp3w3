@@ -1,11 +1,13 @@
 import { ObjectId } from "mongodb";
 import { UserInputModel, UserViewModel, UserViewModel2, UserViewModelConfidential, userDb } from "../types/typeUser";
-import { repositoryUsers } from "../repository/repostiryUsers";
+import { RepositoryUsers } from "../repository/repostiryUsers";
 import bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
 import { add } from "date-fns";
 
-export const usersService = {
+
+export class UsersService {
+  constructor(protected repositoryUsers: RepositoryUsers) { }
   async creatUsers(body: UserInputModel): Promise<UserViewModel2 | null> {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this._generatHash(body.password, passwordSalt);
@@ -27,7 +29,7 @@ export const usersService = {
       createdAt: new Date().toISOString(),
     };
 
-    await repositoryUsers.createUsers(newUser);
+    await this.repositoryUsers.createUsers(newUser);
 
     return {
       id: newUser._id,
@@ -35,20 +37,19 @@ export const usersService = {
       email: newUser.email,
       createdAt: newUser.createdAt,
     };
-  },
+  }
 
   async findUsers(id: string | undefined): Promise<UserViewModel | null> {
-    const res = await repositoryUsers.findUsers(id);
+    const res = await this.repositoryUsers.findUsers(id);
 
     return res;
-  },
-
+  }
   async deleteBlogs(id: string): Promise<void> {
-    await repositoryUsers.deleteBlogs(id);
-  },
+    await this.repositoryUsers.deleteBlogs(id);
+  }
 
   async checkCreadentlais(loginOrEmail: string, password: string) {
-    const user = await repositoryUsers.findBlogOrEmail(loginOrEmail);
+    const user = await this.repositoryUsers.findBlogOrEmail(loginOrEmail);
     if (!user) return false;
     const passwordHash = await this._generatHash(password, user.passwordSalt);
 
@@ -57,11 +58,13 @@ export const usersService = {
     }
 
     return user;
-  },
+  }
 
   async _generatHash(password: string, salt: string) {
     const hash = await bcrypt.hash(password, salt);
 
     return hash;
-  },
-};
+  }
+}
+
+

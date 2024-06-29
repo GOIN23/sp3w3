@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-import { authService } from "../services/auth-service";
+import { authService } from "../composition/composition-rootAuth";
 
 export const validabAuthdEmailCustm = body("email").custom(async value => {
     const user = await authService.findBlogOrEmail(value);

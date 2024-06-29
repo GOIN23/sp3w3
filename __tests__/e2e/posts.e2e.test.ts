@@ -1,7 +1,7 @@
 import request from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { ADMIN_AUTH } from "../../src/auth/authMiddleware";
-import { dbT } from "../../src/db/mongo-.db";
+import { dbStart, dbT } from "../../src/db/mongo-.db";
 import { app } from "../../src/app";
 import { SETTINGS } from "../../src/seting/seting";
 import { PaginatorBlog } from "../../src/types/typeBlog";
@@ -9,6 +9,7 @@ import { PaginatorPosts } from "../../src/types/typePosts";
 import { managerTestBlogs } from "../utilitTest/managerTestBlogs";
 import { managerTestPosts } from "../utilitTest/managerTestPosts";
 import { managerTestUser } from "../utilitTest/managerTestUser";
+import mongoose from "mongoose";
 
 
 
@@ -20,13 +21,17 @@ const codedAuth: string = buff2.toString("base64");
 describe("checking endpoint on path /api/post", () => {
   beforeAll(async () => {
     const mongoServer = await MongoMemoryServer.create();
-    await dbT.run(mongoServer.getUri());
+    await dbStart(mongoServer.getUri())
   });
   afterAll(async () => {
-    await dbT.stop();
+    try {
+      await mongoose.disconnect();
+    } catch (error) {
+      console.error("Error while disconnecting from MongoDB:", error);
+    }
   });
   afterEach(async () => {
-    await dbT.drop();
+    await request(app).delete(SETTINGS.PATH.ALLDATA)
   });
   it("+ GET products = []", async () => {
     await request(app).get(SETTINGS.PATH.POSTS).expect(postsTestIdTest);
@@ -229,7 +234,7 @@ describe("checking endpoint on path /api/post", () => {
         page: 1,
         pageSize: 10,
         totalCount: 5,
-        items: [...result.items],
+        items: [result.items[4], result.items[3], result.items[2], result.items[1], result.items[0]],
       });
 
     await request(app)
@@ -240,7 +245,7 @@ describe("checking endpoint on path /api/post", () => {
         page: 1,
         pageSize: 10,
         totalCount: 5,
-        items: [result.items[4], result.items[3], result.items[2], result.items[1], result.items[0]],
+        items: [result.items[0], result.items[1], result.items[2], result.items[3], result.items[4]],
       });
   });
 
@@ -278,17 +283,19 @@ describe("checking endpoint on path /api/post", () => {
   });
 
   it("+ POSTS/:ID/COMMENTS METHOD=POST successful request creating comments", async () => {
-    const user = await managerTestUser.registerUser({
+    await managerTestUser.registerUser({
       email: "4e5.kn@mail.ru",
       login: "fsasasfas",
       password: "string",
     });
+
+
     const token = await request(app)
       .post(`${SETTINGS.PATH.AUTH}/login`)
       .send({
         loginOrEmail: "4e5.kn@mail.ru", password: "string",
       })
-      .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
+      .expect(SETTINGS.HTTPCOD.HTTPCOD_200)
 
     const blog = await managerTestBlogs.creatBlogOne({
       name: "string",
@@ -310,11 +317,16 @@ describe("checking endpoint on path /api/post", () => {
       commentatorInfo: { userId: expect.any(String), userLogin: "fsasasfas" },
       content: "adasds dasdas adas dad a",
       createdAt: expect.any(String),
+      likesInfo: {
+        dislikesCount: 0,
+        likesCount: 0,
+        myStatus: "None",
+      }
     });
   });
 
   it(" + POSTS/:ID/COMMENTS METHOD=GET check comment for receiving data", async () => {
-    const user = await managerTestUser.registerUser({
+    await managerTestUser.registerUser({
       email: "4e5.kn@mail.ru",
       login: "fsasasfas",
       password: "string",
@@ -344,7 +356,6 @@ describe("checking endpoint on path /api/post", () => {
 
     const comments = await request(app)
       .get(`${SETTINGS.PATH.POSTS}/${posts.id}/comments`)
-      .set({ Authorization: "Bearer " + token.body.accessToken })
       .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
 
     expect(comments.body).toEqual({ pagesCount: 1, page: 1, pageSize: 10, totalCount: 1, items: [postComment] });
@@ -361,7 +372,7 @@ describe("checking endpoint on path /api/post", () => {
   });
 
   it("+ DELETE product by ID", async () => {
-    
+
     const blog = await managerTestBlogs.creatBlogOne({
       name: "string",
       description: "string",

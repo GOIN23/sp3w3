@@ -44,6 +44,7 @@ export type Paginator<T> = {
   items: T[];
 };
 
+
 export type CustomRateLimitT = {
   IP: string | undefined;
   URL: string;
@@ -60,7 +61,7 @@ export type userSessionT = {
 export type DeviceViewModel = {
   userId:string
   ip: string | undefined;
-  title: string | undefined;
+  title: string ;
   lastActiveDate: string;
   deviceId: string;
 };

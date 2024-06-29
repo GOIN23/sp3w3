@@ -1,19 +1,19 @@
 import express, { Request, Response } from "express";
 import { dbT } from "../db/mongo-.db";
-import { passwordRecoveryCodeModule } from "../mongoose/module";
+import { CustomRateLimitTModel, DeviceViewModelMong, blogModel, commentModel, likesModule, passwordRecoveryCodeModule, postModel, userModule } from "../mongoose/module";
 
 export const routerDeletDate = () => {
   const router = express.Router();
 
   router.delete("/", async (req: Request, res: Response) => {
-    dbT.getCollections().blogCollection.deleteMany({});
-    dbT.getCollections().postCollection.deleteMany({});
-    dbT.getCollections().userCollection.deleteMany({});
-    dbT.getCollections().commentCollection.deleteMany({});
-    dbT.getCollections().refreshTokenBlackList.deleteMany({});
-    dbT.getCollections().sesionsUser.deleteMany({});
-    dbT.getCollections().customRateLimit.deleteMany({});
+    await postModel.deleteMany()
+    await blogModel.deleteMany()
+    await userModule.deleteMany()
+    await commentModel.deleteMany()
+    await DeviceViewModelMong.deleteMany()
+    await CustomRateLimitTModel.deleteMany()
     await passwordRecoveryCodeModule.deleteMany();
+    await likesModule.deleteMany()
 
     res.sendStatus(204);
     return;

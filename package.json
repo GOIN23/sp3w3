@@ -7,7 +7,7 @@
     "watch": "tsc -w",
     "dev": "nodemon --inspect dist/index.js",
     "dev:debug": "nodemon --exec node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts",
-    "tes": "jest -i"
+    "test": "jest -i"
   },
   "dependencies": {
     "@types/cookie-parser": "^1.4.7",

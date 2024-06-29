@@ -1,11 +1,11 @@
 import { BlogInputModelT } from "./../types/typeBlog";
-import { CommentatorInfo } from "./../types/typeCommen";
+import { CommentLikeT, CommentatorInfo, likesInfoT, metaLikesInfoT, statusCommentLike } from "./../types/typeCommen";
 import mongoose from "mongoose";
 import { BlogViewModelDbT } from "../types/typeBlog";
 import { PostViewModelTdb } from "../types/typePosts";
 import { CommentViewModelDb } from "../types/typeCommen";
 import { CustomRateLimitT, DeviceViewModel } from "../types/generalType";
-import { UserViewModelConfidential } from "../types/typeUser";
+import { UserViewModelConfidential, emailConfirmation, userDb } from "../types/typeUser";
 
 export const blogSchema = new mongoose.Schema<BlogViewModelDbT>({
   _id: { type: String, required: true },
@@ -30,17 +30,33 @@ export const commentatorInfoSchema = new mongoose.Schema<CommentatorInfo>({
   userLogin: { type: String, required: true },
 });
 
+export const likesInfo = new mongoose.Schema<likesInfoT>({
+  dislikesCount: { type: Number, required: true },
+  likesCount: { type: Number, required: true },
+  myStatus: { type: String, required: true },
+});
+
+
 export const commentSchema = new mongoose.Schema<CommentViewModelDb>({
   _id: { type: String, required: true },
   commentatorInfo: { type: commentatorInfoSchema, required: true },
   content: { type: String, required: true },
   createdAt: { type: String, required: true },
   IdPost: { type: String, required: true },
+  likesInfo: { type: likesInfo, required: true },
+});
+
+export const likeShema = new mongoose.Schema<CommentLikeT>({
+  _id: { type: String, required: true },
+  commentId: { type: String, required: true },
+  createdAt: { type: String, required: true },
+  status: { type: String, required: true },
+  userID: { type: String, required: true },
 });
 
 export const CustomRateLimitTSchema = new mongoose.Schema<CustomRateLimitT>({
   date: { type: Date, required: true },
-  IP: { type: Date, required: true },
+  IP: { type: String, required: true },
   URL: { type: String, required: true },
 });
 
@@ -52,11 +68,18 @@ export const DeviceViewModelSchema = new mongoose.Schema<DeviceViewModel>({
   userId: { type: String, required: true },
 });
 
-export const userSchema = new mongoose.Schema<UserViewModelConfidential>({
+const emailConfirmationShema = new mongoose.Schema<emailConfirmation>({
+  confirmationCode: { type: String, required: true },
+  expirationDate: { type: Date, required: true },
+  isConfirmed: { type: Boolean, required: true }
+
+})
+export const userSchema = new mongoose.Schema<userDb>({
   _id: { type: String, required: true },
   createdAt: { type: String, required: true },
   email: { type: String, required: true },
   login: { type: String, required: true },
+  emailConfirmation: { type: emailConfirmationShema, required: true },
   passwordHash: { type: String, required: true },
   passwordSalt: { type: String, required: true },
 });

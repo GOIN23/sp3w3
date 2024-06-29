@@ -1,5 +1,5 @@
 import { app } from "./../../src/app";
-import { dbT } from "./../../src/db/mongo-.db";
+import { dbStart, dbT } from "./../../src/db/mongo-.db";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import request from "supertest";
 import { SETTINGS } from "../../src/seting/seting";
@@ -7,6 +7,7 @@ import { BlogViewModelT, PaginatorBlog } from "../../src/types/typeBlog";
 import { PostViewModelT } from "../../src/types/typePosts";
 import { ADMIN_AUTH } from "../../src/auth/authMiddleware";
 import { managerTestBlogs } from "../utilitTest/managerTestBlogs";
+import mongoose from "mongoose";
 
 let blogsTest: PaginatorBlog = { pagesCount: 0, page: 1, pageSize: 10, totalCount: 0, items: [] };
 let blogPosts: PostViewModelT;
@@ -16,13 +17,13 @@ let codedAuth: string = buff2.toString("base64");
 describe("checking endpoint on path /api/blog", () => {
   beforeAll(async () => {
     const mongoServer = await MongoMemoryServer.create();
-    await dbT.run(mongoServer.getUri());
+    await dbStart(mongoServer.getUri())
   });
   afterAll(async () => {
-    await dbT.stop();
+    await mongoose.disconnect();
   });
   afterEach(async () => {
-    await dbT.drop();
+    await request(app).delete(SETTINGS.PATH.ALLDATA)
   });
   it("GET products = []", async () => {
     await request(app).get(SETTINGS.PATH.BLOGS).expect(blogsTest);
@@ -274,7 +275,7 @@ describe("checking endpoint on path /api/blog", () => {
     expect(res.body).toEqual(blogsTest);
   });
   it("+ DELETE product by ID", async () => {
-   const blog =  await managerTestBlogs.creatBlogOne({
+    const blog = await managerTestBlogs.creatBlogOne({
       name: "string",
       description: "string",
       websiteUrl: "https://A9k3dqXmQg09DnH9pEgGN0-v64.yh9pEgmrf0I6mSDkAh-3H2-0M_SxHf5WEboprgrfa4jCt1-9i4cbFk_xfbEzkeLJ7",

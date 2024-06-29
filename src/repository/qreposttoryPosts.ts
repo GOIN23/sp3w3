@@ -1,10 +1,9 @@
 import { SortDirection } from "mongodb";
-import { dbT } from "../db/mongo-.db";
 import { postModel } from "../mongoose/module";
 import { BlogViewModelT, PaginatorBlog } from "../types/typeBlog";
 import { PaginatorPosts, PostViewModelT, PostViewModelTdb } from "../types/typePosts";
 
-export const qreposttoryPosts = {
+export class QreposttoryPosts{
   async getPosts(query: any): Promise<PaginatorPosts | { error: string }> {
     const search = query.searchNameTerm ? { title: { $regex: query.searchNameTerm, $options: "i" } } : {};
     const filter = {
@@ -42,5 +41,6 @@ export const qreposttoryPosts = {
       console.log(e);
       return { error: "some error" };
     }
-  },
-};
+  }
+}
+

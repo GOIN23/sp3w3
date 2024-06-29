@@ -3,7 +3,7 @@ import { SETTINGS } from "../seting/seting";
 import { BlogViewModelDbT, BlogViewModelT } from "../types/typeBlog";
 import { PostViewModelT, PostViewModelTdb } from "../types/typePosts";
 import { UserViewModel, UserViewModelConfidential, userDb } from "../types/typeUser";
-import { CommentViewModel, CommentViewModelDb } from "../types/typeCommen";
+import { CommentLikeT, CommentViewModel, CommentViewModelDb } from "../types/typeCommen";
 import { CustomRateLimitT, DeviceViewModel, userSessionT } from "../types/generalType";
 import mongoose from "mongoose";
 
@@ -52,6 +52,7 @@ export const dbT = {
       refreshTokenBlackList: this.getDbName().collection<{ refreshToken: string }>(SETTINGS.REFRESH_TOKEN_BLACK_LIST),
       customRateLimit: this.getDbName().collection<CustomRateLimitT>(SETTINGS.CUSTOM_RATEL_LIMIT),
       sesionsUser: this.getDbName().collection<DeviceViewModel>(SETTINGS.SESION_USER),
+      likescollections: this.getDbName().collection<CommentLikeT>(SETTINGS.LIKES_COLLEKTIONS),
     };
   },
 };

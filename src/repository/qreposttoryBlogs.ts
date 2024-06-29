@@ -6,7 +6,8 @@ import { SortDirection } from "mongodb";
 import { PaginatorPosts } from "../types/typePosts";
 import { blogModel, postModel } from "../mongoose/module";
 
-export const qreposttoryBlogs = {
+
+export class QreposttoryBlogs {
   async getBlogs(query: qureT): Promise<PaginatorBlog | { error: string }> {
     const search = query.searchNameTerm ? { name: { $regex: query.searchNameTerm, $options: "i" } } : {};
     const filter = {
@@ -41,7 +42,7 @@ export const qreposttoryBlogs = {
     } catch (e) {
       return { error: "some error" };
     }
-  },
+  }
 
   async getBlogsPosts(query: any, id: string): Promise<PaginatorPosts | { error: string }> {
     const search = query.searchNameTerm ? { name: { $regex: query.searchNameTerm, $options: "i" } } : {};
@@ -81,5 +82,10 @@ export const qreposttoryBlogs = {
       console.log(e);
       return { error: "some error" };
     }
-  },
-};
+  }
+}
+
+
+
+
+

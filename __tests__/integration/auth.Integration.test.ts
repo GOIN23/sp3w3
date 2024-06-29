@@ -1,37 +1,42 @@
+import { body } from 'express-validator';
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { dbT } from "../../src/db/mongo-.db";
-import { authService } from "../../src/services/auth-service";
+import { dbStart, dbT } from "../../src/db/mongo-.db";
 import { emailAdapter } from "../../src/adapter/emailAdapter";
 import { managerTestUser } from "../utilitTest/managerTestUser";
 import { app } from "../../src/app";
 import request from "supertest";
 import { SETTINGS } from "../../src/seting/seting";
-import { repositoryUsers } from "../../src/repository/repostiryUsers";
-import { usersService } from "../../src/services/users-service";
-import { jwtService } from "../../src/routers/application/jwtService";
+import mongoose from "mongoose";
+import { authService, controllerAuth, repositryAuth } from "../../src/composition/composition-rootAuth";
+import { repositryUsers } from "../../src/composition/composition-rootUsers";
+
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 describe("Auth-integration", () => {
   beforeAll(async () => {
     const mongoServer = await MongoMemoryServer.create();
-    await dbT.run(mongoServer.getUri());
-  });
-  beforeEach(async () => {
-    await dbT.drop();
+    await dbStart(mongoServer.getUri())
   });
   afterAll(async () => {
-    await dbT.drop();
-    await dbT.stop();
+    try {
+      await mongoose.disconnect();
+    } catch (error) {
+      console.error("Error while disconnecting from MongoDB:", error);
+    }
   });
+  afterEach(async () => {
+    await request(app).delete(SETTINGS.PATH.ALLDATA)
+  })
 
   describe("authentication", () => {
-    const registerUserUseCase = authService.creatUser.bind(authService);
     it("registration correct", async () => {
       emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
         return true;
       });
       const userDto = managerTestUser.creatUserDto();
 
-      const result = await registerUserUseCase(userDto);
+      const result = await authService.creatUser(userDto);
 
       expect(result).toEqual({
         id: expect.any(String),
@@ -68,8 +73,8 @@ describe("Auth-integration", () => {
         return true;
       });
       const userDto = managerTestUser.creatUserDto();
-      await registerUserUseCase(userDto);
-      const findUser = await repositoryUsers.findBlogOrEmail(userDto.email);
+      await authService.creatUser(userDto);
+      const findUser = await repositryUsers.findBlogOrEmail(userDto.email);
 
       const coorectCode = await authService.confirmEmail(findUser!.emailConfirmation!.confirmationCode);
       expect(coorectCode).toBe(true);
@@ -82,7 +87,7 @@ describe("Auth-integration", () => {
         return true;
       });
       const userDto = managerTestUser.creatUserDto();
-      await registerUserUseCase(userDto);
+      await authService.creatUser(userDto);
       await authService.resendingCode(userDto.email);
 
       expect(emailAdapter.sendEmail).toHaveBeenCalled();
@@ -93,8 +98,8 @@ describe("Auth-integration", () => {
         return true;
       });
       const userDto = managerTestUser.creatUserDto();
-      await registerUserUseCase(userDto);
-      const findUser = await repositoryUsers.findBlogOrEmail(userDto.email);
+      await authService.creatUser(userDto);
+      const findUser = await repositryUsers.findBlogOrEmail(userDto.email);
       const coorectCode = await authService.confirmEmail(findUser!.emailConfirmation!.confirmationCode);
       expect(coorectCode).toBe(true);
 
@@ -114,23 +119,65 @@ describe("Auth-integration", () => {
 
       expect(emailAdapter.sendEmail).not.toHaveBeenCalled();
     });
+    it("password update", async () => {
+      emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
+        return true;
+      });
+      const userDto = managerTestUser.creatUserDto();
+      await authService.creatUser(userDto);
+      await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({
+          loginOrEmail: userDto.login,
+          password: userDto.password,
+        })
+        .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
+
+      const resCode = await authService.passwordRecovery(userDto.email)
+
+
+      await authService.checkPasswordRecovery(resCode, "12345678")
+
+
+      await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({
+          loginOrEmail: userDto.login,
+          password: userDto.password,
+        })
+        .expect(SETTINGS.HTTPCOD.HTTPCOD_401);
+
+
+      await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({
+          loginOrEmail: userDto.login,
+          password: "12345678",
+        })
+        .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
+
+
+
+
+      expect(emailAdapter.sendEmail).toHaveBeenCalledTimes(2);
+
+    })
   });
 
   describe("authorization", () => {
-    const registerUserUseCase = authService.creatUser.bind(authService);
     it("+ auth/login. Successful login", async () => {
       emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
         return true;
       });
 
-      const dto = managerTestUser.creatUserDto();
-      await registerUserUseCase(dto);
+      const userDto = managerTestUser.creatUserDto();
+      await authService.creatUser(userDto);
 
       const result = await request(app)
         .post(`${SETTINGS.PATH.AUTH}/login`)
         .send({
-          loginOrEmail: dto.login,
-          password: dto.password,
+          loginOrEmail: userDto.login,
+          password: userDto.password,
         })
         .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
 
@@ -158,7 +205,7 @@ describe("Auth-integration", () => {
       });
 
       const dto = managerTestUser.creatUserDto();
-      await registerUserUseCase(dto);
+      await authService.creatUser(dto);
 
       const result = await request(app)
         .post(`${SETTINGS.PATH.AUTH}/login`)
@@ -170,13 +217,13 @@ describe("Auth-integration", () => {
 
       await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", result.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_204);
     });
-    it("- auth/logout. Went out refreshToken", async () => {
+    it("- auth/logout. invalid refreshToken", async () => {
       emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
         return true;
       });
 
       const dto = managerTestUser.creatUserDto();
-      await registerUserUseCase(dto);
+      await authService.creatUser(dto);
 
       const result = await request(app)
         .post(`${SETTINGS.PATH.AUTH}/login`)
@@ -186,11 +233,13 @@ describe("Auth-integration", () => {
         })
         .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
 
-      const refreshToken = result.headers["set-cookie"].toString().split(";")[0].split("=")[1];
 
-      await jwtService.addRefreshTokenBlacKlist(refreshToken);
+      await delay(1000)
+      await request(app)
+        .post(`${SETTINGS.PATH.AUTH}/refresh-token`).set("Cookie", result.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_200)
 
-      await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", result.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_401);
+      await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", result.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_401);// Обновление refresh-token и соответсвенно обновление токина в сессии.
+
     });
     it("+ auth/refresh-token. Successful token update", async () => {
       emailAdapter.sendEmail = jest.fn().mockImplementation((userCode: string, email: string) => {
@@ -198,7 +247,7 @@ describe("Auth-integration", () => {
       });
 
       const dto = managerTestUser.creatUserDto();
-      await registerUserUseCase(dto);
+      await authService.creatUser(dto);
 
       const result = await request(app)
         .post(`${SETTINGS.PATH.AUTH}/login`)
@@ -208,16 +257,18 @@ describe("Auth-integration", () => {
         })
         .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
 
+      await delay(1000)
       const newToken = await request(app)
         .post(`${SETTINGS.PATH.AUTH}/refresh-token`)
         .set("Cookie", result.headers["set-cookie"])
         .expect(SETTINGS.HTTPCOD.HTTPCOD_200);
 
-
-        console.log(newToken.headers["set-cookie"],"dssdsdsdsd sdsds")
-
       await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", result.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_401);
-      // await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", newToken.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_204);
+
+      await request(app).post(`${SETTINGS.PATH.AUTH}/logout`).set("Cookie", newToken.headers["set-cookie"]).expect(SETTINGS.HTTPCOD.HTTPCOD_204);
+
+
+
     });
   });
 });

@@ -1,50 +1,62 @@
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
-import { repositryAuth } from "../../repository/repositryAuth";
+import { RepositryAuth } from "../../repository/repositryAuth";
 import { DeviceViewModel, userSessionT } from "../../types/generalType";
 import { SETTINGS } from "../../seting/seting";
 
-export const sesionsService = {
+export class SesionsService {
+  constructor(protected repositryAuth: RepositryAuth) { }
   async creatSesion(userSession: DeviceViewModel) {
-    await repositryAuth.addSesionUser(userSession);
-  },
+    await this.repositryAuth.addSesionUser(userSession);
+  }
   async updateSesion(iat: string, userId: string, diveceId: string) {
-    await repositryAuth.updateSesionUser(iat, userId, diveceId);
-  },
+    await this.repositryAuth.updateSesionUser(iat, userId, diveceId);
+  }
   async getSesions(token: string) {
     try {
       const result: any = jwt.verify(token, SETTINGS.JWT_SECRET);
-      const sesions = await repositryAuth.getSesions(result.userId);
+      const sesions = await this.repositryAuth.getSesions(result.userId);
 
       return sesions;
     } catch (error) {
       return null;
     }
-  },
+  }
+  async getSesionsId(deviceId: string){
+    const sesion = this.repositryAuth.getSesionsId(deviceId)
+
+    return sesion
+  }
   async completelyRemoveSesion(token: string) {
     try {
       const result: any = jwt.verify(token, SETTINGS.JWT_SECRET);
-      const sesions = await repositryAuth.completelyRemoveSesion(result.deviceId,result.userId);
+      const sesions = await this.repositryAuth.completelyRemoveSesion(result.deviceId, result.userId);
 
       return sesions;
     } catch (error) {
       return null;
     }
-  },
+  }
   async deleteSesions(token: string) {
     try {
       const result: any = jwt.verify(token, SETTINGS.JWT_SECRET);
-      const sesions = await repositryAuth.deleteSesions(result.deviceId);
+      const sesions = await this.repositryAuth.deleteSesions(result.deviceId);
 
       return sesions;
     } catch (error) {
       return null;
     }
-  },
+  }
   async deleteSesionsId(deviceId: string) {
-   
-    await repositryAuth.deleteSesionsId(deviceId);
+
+    await this.repositryAuth.deleteSesionsId(deviceId);
 
     return true;
-  },
-};
+  }
+}
+
+
+
+
+
+

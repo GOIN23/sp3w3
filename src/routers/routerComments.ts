@@ -1,62 +1,29 @@
-import express, { Request, Response } from "express";
-import { postsService } from "../services/posts-service";
-import { SETTINGS } from "../seting/seting";
-import { validaCommentPost } from "../validation/validationsPostst";
+import { determinIngUserLikeStatusMiddleware } from "./../utilt/determiningUserLikeStatus";
+import express from "express";
+import { validaCommentLikeDeslik, validaCommentPost } from "../validation/validationsPostst";
 import { validaError } from "../validation/generalvValidation";
 import { authTokenMiddleware } from "../auth/authTokenMiddleware";
+import { authTokenAccessTokenMiddleware } from "../auth/authTokenAccessTokenMiddleware";
+import { controllerComments } from "../composition/composition-rootComments";
+
+
+
+
+
+
+
+
 
 export const routerComments = () => {
   const router = express.Router();
 
-  router.get("/:id", async (req: Request, res: Response) => {
-    const result = await postsService.findCommentPosts(req.params.id);
+  router.get("/:id", determinIngUserLikeStatusMiddleware, controllerComments.getByIdCommentst.bind(controllerComments));
 
-    if (!result) {
-      res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_404);
-      return;
-    }
+  router.put("/:id", authTokenMiddleware, validaCommentPost, validaError, controllerComments.putComment.bind(controllerComments));
 
-    res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send(result);
-    return;
-  });
+  router.put("/:id/like-status", authTokenAccessTokenMiddleware, validaCommentLikeDeslik, validaError, controllerComments.commentLikeStatus.bind(controllerComments));
 
-  router.put("/:id", authTokenMiddleware, validaCommentPost, validaError, async (req: Request, res: Response) => {
-    const resul = await postsService.findCommentPosts(req.params.id);
+  router.delete("/:id", authTokenMiddleware, controllerComments.deleteComment.bind(controllerComments));
 
-    if (!resul) {
-      res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_404);
-      return;
-    }
-
-    if (resul.commentatorInfo.userId !== req.userId) {
-      res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_403);
-      return;
-    }
-
-    await postsService.updateCommentPosts(req.body, req.params.id);
-
-    res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_204);
-    return;
-  });
-
-  router.delete("/:id", authTokenMiddleware, async (req: Request, res: Response) => {
-    const resul = await postsService.findCommentPosts(req.params.id);
-
-    if (!resul) {
-      res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_404);
-      return;
-    }
-
-    if (resul.commentatorInfo.userId !== req.userId) {
-      res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_403);
-      return;
-    }
-
-    await postsService.deleteCommentPosts(req.params.id);
-
-    res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_204);
-    return;
-  });
-  
   return router;
 };

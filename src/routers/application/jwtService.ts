@@ -1,15 +1,17 @@
 import { ObjectId } from "mongodb";
 import { SETTINGS } from "../../seting/seting";
-import {  DeviceViewModel, LoginSuccessViewModel, userSessionT } from "../../types/generalType";
+import { DeviceViewModel, LoginSuccessViewModel, userSessionT } from "../../types/generalType";
 import { UserViewModelConfidential } from "../../types/typeUser";
 import jwt from "jsonwebtoken";
-import { repositryAuth } from "../../repository/repositryAuth";
-import { sesionsService } from "./sesionsService";
+import { RepositryAuth } from "../../repository/repositryAuth";
+import { SesionsService } from "./sesionsService";
 
-export const jwtService = {
-  async createJwt(id: string, ip: string | undefined, title: string | undefined): Promise<LoginSuccessViewModel> {
+
+export class JwtService {
+  constructor(protected sesionsService: SesionsService, protected repositryAuth: RepositryAuth) { }
+  async createJwt(id: string, ip: string | undefined, title: string): Promise<LoginSuccessViewModel> {
     const deviceId = String(new ObjectId());
-    const accessToken = jwt.sign({ userId: id }, SETTINGS.JWT_SECRET, { expiresIn: "30s" });
+    const accessToken = jwt.sign({ userId: id }, SETTINGS.JWT_SECRET, { expiresIn: "5m" });
     const refreshToken = await this.createRefreshToken(id, deviceId);
     const result: any = jwt.verify(refreshToken, SETTINGS.JWT_SECRET);
 
@@ -20,33 +22,27 @@ export const jwtService = {
       ip: ip,
       title: title,
     };
-    await sesionsService.creatSesion(userSession);
+    await this.sesionsService.creatSesion(userSession);
 
     return {
       accessToken: accessToken,
       refreshToken: refreshToken,
     };
-  },
+  }
   async getUserIdByToken(token: string) {
     try {
       const result: any = jwt.verify(token, SETTINGS.JWT_SECRET);
-      // const checkSesionshToken = await repositryAuth.findRottenSessions(result.userId, result.deviceId);
-      // if (!checkSesionshToken) {
-      //   return null;
-      // }
-      // if (result.iat < checkSesionshToken!.lastActiveDate) {
-      //   return null;
-      // }
+
 
       return new ObjectId(result.userId);
     } catch (error) {
       return null;
     }
-  },
+  }
   async createRefreshToken(id: string, deviceId: string): Promise<string> {
-    const refreshToken = jwt.sign({ userId: id, deviceId: deviceId }, SETTINGS.JWT_SECRET, { expiresIn: "1m" });
+    const refreshToken = jwt.sign({ userId: id, deviceId: deviceId }, SETTINGS.JWT_SECRET, { expiresIn: "24h" });
     return refreshToken;
-  },
+  }
   async updateToken(token: string, ip: string | undefined, title: string | undefined): Promise<LoginSuccessViewModel | null> {
     try {
       const result: any = jwt.verify(token, SETTINGS.JWT_SECRET);
@@ -56,7 +52,7 @@ export const jwtService = {
 
       const metaData: any = jwt.verify(refreshToken, SETTINGS.JWT_SECRET);
 
-      await sesionsService.updateSesion(metaData.iat, metaData.userId, metaData.deviceId);
+      await this.sesionsService.updateSesion(metaData.iat, metaData.userId, metaData.deviceId);
 
       return {
         accessToken,
@@ -65,14 +61,13 @@ export const jwtService = {
     } catch (error) {
       return null;
     }
-  },
-  async addRefreshTokenBlacKlist(token: string) {
-    await repositryAuth.postRefreshTokenBlacKlist(token);
-  },
+  }
   async checkRefreshToken(refreshToken: string) {
     try {
       const result: any = jwt.verify(refreshToken, SETTINGS.JWT_SECRET);
-      const checkSesionshToken = await repositryAuth.findRottenSessions(result.userId, result.deviceId);
+      const checkSesionshToken = await this.repositryAuth.findRottenSessions(result.userId, result.deviceId);
+
+
       if (!checkSesionshToken) {
         return null;
       }
@@ -84,5 +79,20 @@ export const jwtService = {
     } catch (error) {
       return null;
     }
-  },
-};
+  }
+  async checkAccessToken(accessToken: string) {
+    try {
+      const result: any = jwt.verify(accessToken, SETTINGS.JWT_SECRET);
+      return result;
+    } catch (error) {
+      return null;
+    }
+  }
+
+}
+
+
+
+
+
+
