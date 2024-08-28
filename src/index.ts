@@ -12,7 +12,7 @@ const startApi = async () => {
   await dbStart(SETTINGS.MONGO_URL)
   console.log(process.env.MONGO_URL, 2)
   app.set('trust proxy', true)
-
+  console.log("dsds")
   app.listen(SETTINGS.PORT, () => {
     console.log(`server   start`);
   });
