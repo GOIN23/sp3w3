@@ -8,7 +8,8 @@
     "dev": "nodemon --inspect dist/index.js",
     "dev:debug": "nodemon --exec node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts",
     "test": "jest -i",
-    "build": "yarn install && yarn tsc"
+    "build": "yarn install && yarn tsc",
+    "start": "yarn node dist/index.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
