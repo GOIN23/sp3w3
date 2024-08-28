@@ -1,3 +1,5 @@
+import { statusCommentLike } from "./typeCommen";
+
 export type PostViewModelTdb = {
   _id: string;
   title: string;
@@ -7,6 +9,31 @@ export type PostViewModelTdb = {
   blogName: string;
   createdAt: string;
 };
+
+
+export type newestLikes = {
+  addedAt: string,
+  userId: string,
+  login: string
+}
+
+export type extendedLikesInfo = {
+  likesCount: number,
+  dislikesCount: number,
+  myStatus: statusCommentLike,
+  newestLikes: newestLikes[]
+}
+
+export type PostViewModelLiKeArray = {
+  id: string;
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: string;
+  blogName: string;
+  createdAt: string;
+  extendedLikesInfo: extendedLikesInfo
+}
 
 export type PostViewModelT = {
   id: string;

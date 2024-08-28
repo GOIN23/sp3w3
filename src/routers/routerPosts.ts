@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import {
+  validaCommentLikeDeslik,
   validaCommentPost,
   validaContentPosts,
   validaShortDescriptionPosts,
@@ -19,6 +20,7 @@ export const routerPosts = () => {
 
   router.get(
     "/",
+    determinIngUserLikeStatusMiddleware,
     validaQursortDirection,
     validaQurePageSezi,
     validaQureipageNumber,
@@ -43,8 +45,10 @@ export const routerPosts = () => {
   //@ts-ignore
   router.get("/:id/comments", determinIngUserLikeStatusMiddleware, validaQurePageSezi, validaQureipageNumber, validaQureSortBy, validaQursortDirection, controllerPosts.getComments.bind(controllerPosts));
 
-  router.get("/:id", controllerPosts.getPostsById.bind(controllerPosts));
+  router.get("/:id", determinIngUserLikeStatusMiddleware, controllerPosts.getPostsById.bind(controllerPosts));
 
+
+  router.put("/:id/like-status", authTokenAccessTokenMiddleware, validaCommentLikeDeslik, validaError, controllerPosts.putLikeStatusPosts.bind(controllerPosts))
   router.put(
     "/:id",
     authMiddleware,

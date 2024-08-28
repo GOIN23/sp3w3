@@ -17,9 +17,10 @@ export class RouterAuth {
             res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_401);
             return;
         }
+    
         const userAgent = req.headers["user-agent"] || 'unknown device';
 
-        const { accessToken, refreshToken } = await this.jwtService.createJwt(user._id, req.ip, userAgent);
+        const { accessToken, refreshToken } = await this.jwtService.createJwt(user._id, req.ip, userAgent, user.login);
 
         res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true });
 

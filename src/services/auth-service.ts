@@ -13,7 +13,6 @@ import { CustomRateLimitT } from "../types/generalType";
 
 export class AuthService {
   constructor(public repositoryUsers: RepositoryUsers, public repositryAuth: RepositryAuth) {
-
   }
 
   async creatUser(userData: UserInputModel): Promise<UserViewModel2> {
@@ -42,6 +41,7 @@ export class AuthService {
     };
 
 
+    console.log(newUser,"newUsernewUsernewUser" )
 
     await this.repositoryUsers.createUsers(newUser);
 
@@ -134,7 +134,7 @@ export class AuthService {
       return null;
     }
 
-    return checkEmailorLogin;
+    return true;
   }
   async addRateLlimit(metaData: CustomRateLimitT) {
     await this.repositryAuth.addRateLlimit(metaData);
@@ -144,7 +144,6 @@ export class AuthService {
     const result = await this.repositryAuth.checkingNumberRequests(metaData, data);
     return result;
   }
-
 }
 
 

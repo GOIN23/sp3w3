@@ -9,9 +9,9 @@ import { SesionsService } from "./sesionsService";
 
 export class JwtService {
   constructor(protected sesionsService: SesionsService, protected repositryAuth: RepositryAuth) { }
-  async createJwt(id: string, ip: string | undefined, title: string): Promise<LoginSuccessViewModel> {
+  async createJwt(id: string, ip: string | undefined, title: string, userLogin?: string): Promise<LoginSuccessViewModel> {
     const deviceId = String(new ObjectId());
-    const accessToken = jwt.sign({ userId: id }, SETTINGS.JWT_SECRET, { expiresIn: "5m" });
+    const accessToken = jwt.sign({ userId: id, login: userLogin }, SETTINGS.JWT_SECRET, { expiresIn: "5m" });
     const refreshToken = await this.createRefreshToken(id, deviceId);
     const result: any = jwt.verify(refreshToken, SETTINGS.JWT_SECRET);
 

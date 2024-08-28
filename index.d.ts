@@ -13,7 +13,9 @@ import { Request as ExpressRequest } from "express"
 
 declare module "express" {
     interface Request extends ExpressRequest {
-        userId:string | undefined
+        userId:string | undefined,
+        userLogin:string | undefined 
+
     }
 }
 
@@ -21,7 +23,8 @@ declare module "express" {
 
 declare module "express-serve-static-core" {
     interface Request {
-        userId:string | undefined
+        userId:string | undefined,
+        userLogin:string | undefined 
     }
 }
 

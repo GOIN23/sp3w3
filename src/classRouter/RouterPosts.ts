@@ -13,11 +13,11 @@ import { PostsService } from "../services/posts-service";
 
 
 export class RouterPosts {
-    constructor(protected postsService: PostsService, protected qreposttoryPosts:QreposttoryPosts, protected qreposttoryCommentsPosts:QreposttoryCommentsPosts, protected usersService:UsersService) {
+    constructor(protected postsService: PostsService, protected qreposttoryPosts: QreposttoryPosts, protected qreposttoryCommentsPosts: QreposttoryCommentsPosts, protected usersService: UsersService) {
 
     }
-    async getPosts(req: Request<{}, {}, {}, qureT>, res: Response) {
-        let result = await this.qreposttoryPosts.getPosts(req.query);
+    async getPosts(req: Request, res: Response) {
+        let result = await this.qreposttoryPosts.getPosts(req.query, req.userId);
         res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send(result);
         return;
     }
@@ -69,7 +69,8 @@ export class RouterPosts {
     }
 
     async getPostsById(req: Request, res: Response) {
-        const result = await this.postsService.findPosts(req.params.id);
+        const result = await this.qreposttoryPosts.getPostsById(req.userId || 'null', req.params.id);
+
 
         if (!result) {
             res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_404);
@@ -96,6 +97,22 @@ export class RouterPosts {
 
         await this.postsService.updatPosts(req.body, req.params.id);
         res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_204);
+    }
+
+    async putLikeStatusPosts(req: Request, res: Response) {
+        const resul = await this.postsService.findPosts(req.params.id);
+
+
+        if (!resul) {
+            res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_404);
+            return;
+        }
+        await this.postsService.updatePostsLikeDeslike(req.body.likeStatus, req.params.id, req.userId || "null", req.userLogin || "null");
+
+        res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_204);
+        return;
+
+
     }
 
     async deletePost(req: Request, res: Response) {

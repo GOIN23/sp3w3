@@ -4,26 +4,27 @@ import { validaCommentLikeDeslik, validaCommentPost } from "../validation/valida
 import { validaError } from "../validation/generalvValidation";
 import { authTokenMiddleware } from "../auth/authTokenMiddleware";
 import { authTokenAccessTokenMiddleware } from "../auth/authTokenAccessTokenMiddleware";
-import { controllerComments } from "../composition/composition-rootComments";
+import { container } from "../composition/composition-rootComments";
+import { RouterComments } from "../classRouter/RouterComments";
 
 
 
 
 
-
+const controllerCommmentsIoc = container.resolve(RouterComments)
 
 
 
 export const routerComments = () => {
   const router = express.Router();
 
-  router.get("/:id", determinIngUserLikeStatusMiddleware, controllerComments.getByIdCommentst.bind(controllerComments));
+  router.get("/:id", determinIngUserLikeStatusMiddleware, controllerCommmentsIoc.getByIdCommentst.bind(controllerCommmentsIoc));
 
-  router.put("/:id", authTokenMiddleware, validaCommentPost, validaError, controllerComments.putComment.bind(controllerComments));
+  router.put("/:id", authTokenMiddleware, validaCommentPost, validaError, controllerCommmentsIoc.putComment.bind(controllerCommmentsIoc));
 
-  router.put("/:id/like-status", authTokenAccessTokenMiddleware, validaCommentLikeDeslik, validaError, controllerComments.commentLikeStatus.bind(controllerComments));
+  router.put("/:id/like-status", authTokenAccessTokenMiddleware, validaCommentLikeDeslik, validaError, controllerCommmentsIoc.commentLikeStatus.bind(controllerCommmentsIoc));
 
-  router.delete("/:id", authTokenMiddleware, controllerComments.deleteComment.bind(controllerComments));
+  router.delete("/:id", authTokenMiddleware, controllerCommmentsIoc.deleteComment.bind(controllerCommmentsIoc));
 
   return router;
-};
+}

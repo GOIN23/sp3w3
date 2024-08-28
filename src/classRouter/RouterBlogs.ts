@@ -6,9 +6,10 @@ import { errorValid } from "../utilt/errors";
 import { QreposttoryBlogs } from "../repository/qreposttoryBlogs";
 import { PostsService } from "../services/posts-service";
 import { BlogsService } from "../services/blogs-service";
+import { QreposttoryPosts } from "../repository/qreposttoryPosts";
 
 export class RouterBlogs {
-  constructor(protected blogsService: BlogsService, protected postsService: PostsService, protected qreposttoryBlogs:QreposttoryBlogs) { }
+  constructor(protected blogsService: BlogsService, protected postsService: PostsService, protected qreposttoryBlogs: QreposttoryBlogs, protected qreposttoryPosts: QreposttoryPosts) { }
   async getBlogs(req: Request<{}, {}, {}, qureT>, res: Response) {
     let result = await this.qreposttoryBlogs.getBlogs(req.query);
 
@@ -62,7 +63,7 @@ export class RouterBlogs {
       return;
     }
 
-    const resultq = await this.qreposttoryBlogs.getBlogsPosts(req.query, req.params.id);
+    const resultq = await this.qreposttoryBlogs.getBlogsPosts(req.query, req.params.id, req.userId || "null");
 
     res.status(SETTINGS.HTTPCOD.HTTPCOD_200).send(resultq);
   }

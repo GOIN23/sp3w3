@@ -1,17 +1,22 @@
+import { injectable } from "inversify";
 import { PostsService } from "../services/posts-service";
 import { SETTINGS } from "../seting/seting";
-import express, { Request, Response } from "express";
+import { Request, Response } from "express";
+import "reflect-metadata"
 
 
 
 
 
+@injectable()
 export class RouterComments {
-    constructor(protected postsService: PostsService) { }
-
+    constructor(protected postsService: PostsService) {}
 
     async getByIdCommentst(req: Request, res: Response) {
         const result = await this.postsService.findCommentPosts(req.params.id, req.userId);
+
+
+
 
         if (!result) {
             res.sendStatus(SETTINGS.HTTPCOD.HTTPCOD_404);

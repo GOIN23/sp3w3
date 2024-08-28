@@ -5,7 +5,8 @@ import {
   DeviceViewModelSchema,
   blogSchema,
   commentSchema,
-  likeShema,
+  likeShemaComment,
+  likeShemaPost,
   passwordRecoveryCodeSchema,
   postSchema,
   userSchema,
@@ -18,5 +19,6 @@ export const CustomRateLimitTModel = mongoose.model(SETTINGS.CUSTOM_RATEL_LIMIT,
 export const DeviceViewModelMong = mongoose.model(SETTINGS.SESION_USER, DeviceViewModelSchema);
 export const userModule = mongoose.model(SETTINGS.USER_COLLECTION_NAME, userSchema);
 export const passwordRecoveryCodeModule = mongoose.model(SETTINGS.RECOVERY_PASSWORD_CODE, passwordRecoveryCodeSchema);
+export const likesModule = mongoose.model(SETTINGS.LIKES_COLLEKTIONS, likeShemaComment);
+export const likesModulePosts = mongoose.model(SETTINGS.LIKES_COLLEKTIONS_POSTS, likeShemaPost);
 
-export const likesModule = mongoose.model(SETTINGS.LIKES_COLLEKTIONS, likeShema);

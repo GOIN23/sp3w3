@@ -1,11 +1,10 @@
-import { BlogInputModelT } from "./../types/typeBlog";
-import { CommentLikeT, CommentatorInfo, likesInfoT, metaLikesInfoT, statusCommentLike } from "./../types/typeCommen";
+import { CommentLikeT, CommentatorInfo, PostLikeT, likesInfoT } from "./../types/typeCommen";
 import mongoose from "mongoose";
 import { BlogViewModelDbT } from "../types/typeBlog";
 import { PostViewModelTdb } from "../types/typePosts";
 import { CommentViewModelDb } from "../types/typeCommen";
 import { CustomRateLimitT, DeviceViewModel } from "../types/generalType";
-import { UserViewModelConfidential, emailConfirmation, userDb } from "../types/typeUser";
+import { emailConfirmation, userDb } from "../types/typeUser";
 
 export const blogSchema = new mongoose.Schema<BlogViewModelDbT>({
   _id: { type: String, required: true },
@@ -23,6 +22,7 @@ export const postSchema = new mongoose.Schema<PostViewModelTdb>({
   content: { type: String, required: true },
   shortDescription: { type: String, required: true },
   title: { type: String, required: true },
+  createdAt:{ type: String, required: true }
 });
 
 export const commentatorInfoSchema = new mongoose.Schema<CommentatorInfo>({
@@ -46,12 +46,22 @@ export const commentSchema = new mongoose.Schema<CommentViewModelDb>({
   likesInfo: { type: likesInfo, required: true },
 });
 
-export const likeShema = new mongoose.Schema<CommentLikeT>({
+export const likeShemaComment = new mongoose.Schema<CommentLikeT>({
   _id: { type: String, required: true },
   commentId: { type: String, required: true },
   createdAt: { type: String, required: true },
   status: { type: String, required: true },
   userID: { type: String, required: true },
+});
+
+
+export const likeShemaPost = new mongoose.Schema<PostLikeT>({
+  _id: { type: String, required: true },
+  postId: { type: String, required: true },
+  createdAt: { type: String, required: true },
+  status: { type: String, required: true },
+  userID: { type: String, required: true },
+  login: { type: String, required: true }
 });
 
 export const CustomRateLimitTSchema = new mongoose.Schema<CustomRateLimitT>({
@@ -88,3 +98,5 @@ export const passwordRecoveryCodeSchema = new mongoose.Schema<{ code: string; em
   code: { type: String, required: true },
   email: { type: String, required: true },
 });
+
+

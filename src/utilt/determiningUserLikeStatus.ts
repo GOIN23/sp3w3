@@ -15,6 +15,7 @@ export const determinIngUserLikeStatusMiddleware = async (req: Request, res: Res
   try {
     const userId: any = jwt.verify(token, SETTINGS.JWT_SECRET);
     req.userId = userId.userId;
+    req.userLogin = userId.login
     next();
   } catch (error) {
     next();

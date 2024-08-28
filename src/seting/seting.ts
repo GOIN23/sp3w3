@@ -34,5 +34,7 @@ export const SETTINGS = {
   CUSTOM_RATEL_LIMIT: "customRateLimit",
   SESION_USER: "sesionUser",
   RECOVERY_PASSWORD_CODE: "passwordRecoveryCode",
-  LIKES_COLLEKTIONS:"likescollections"
+  LIKES_COLLEKTIONS:"likescollections",
+  LIKES_COLLEKTIONS_POSTS:"likeSPosts"
+
 };

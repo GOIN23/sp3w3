@@ -4,6 +4,7 @@ import { authMiddleware } from "../auth/authMiddleware";
 import { validaContentPosts, validaShortDescriptionPosts, validaTitlePosts } from "../validation/validationsPostst";
 import { validaQurePageSezi, validaQureSortBy, validaQureipageNumber, validaQursortDirection, validaSearchNameTerm } from "../validation/generalvValidation";
 import { controllerBlogs } from "../composition/composition-rootBlogs";
+import { determinIngUserLikeStatusMiddleware } from "../utilt/determiningUserLikeStatus";
 
 export const routerBlogs = () => {
   const router = express.Router();
@@ -34,6 +35,7 @@ export const routerBlogs = () => {
 
   router.get(
     "/:id/posts",
+    determinIngUserLikeStatusMiddleware,
     validaQursortDirection,
     validaQurePageSezi,
     validaQureipageNumber,
@@ -41,7 +43,7 @@ export const routerBlogs = () => {
     validaQureSortBy,
     controllerBlogs.getIdPosts.bind(controllerBlogs)
   );
-  
+
   router.put("/:id", authMiddleware, validaNameBlogs, validaDescriptionBlogs, validaWebsiteUrlBlogs, controllerBlogs.updateBlogs.bind(controllerBlogs));
 
   router.delete("/:id", authMiddleware, controllerBlogs.deleteBlogs.bind(controllerBlogs));

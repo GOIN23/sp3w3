@@ -3,6 +3,7 @@ import { authService } from "../composition/composition-rootAuth";
 
 export const validabAuthdEmailCustm = body("email").custom(async value => {
     const user = await authService.findBlogOrEmail(value);
+    console.log(user, "email email")
     if (!user) {
       throw new Error('E-mail already in use');
     }
@@ -10,6 +11,7 @@ export const validabAuthdEmailCustm = body("email").custom(async value => {
   
   export const validabAuthdLoginCustm = body("login").custom(async value => {
     const user = await authService.findBlogOrEmail(value);
+    console.log(user, "login login")
     if (!user) {
       throw new Error('login already in use');
     }

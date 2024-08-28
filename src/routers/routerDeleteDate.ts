@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { dbT } from "../db/mongo-.db";
-import { CustomRateLimitTModel, DeviceViewModelMong, blogModel, commentModel, likesModule, passwordRecoveryCodeModule, postModel, userModule } from "../mongoose/module";
+import { CustomRateLimitTModel, DeviceViewModelMong, blogModel, commentModel, likesModule, likesModulePosts, passwordRecoveryCodeModule, postModel, userModule } from "../mongoose/module";
 
 export const routerDeletDate = () => {
   const router = express.Router();
@@ -14,6 +14,7 @@ export const routerDeletDate = () => {
     await CustomRateLimitTModel.deleteMany()
     await passwordRecoveryCodeModule.deleteMany();
     await likesModule.deleteMany()
+    await likesModulePosts.deleteMany()
 
     res.sendStatus(204);
     return;

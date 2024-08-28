@@ -21,6 +21,7 @@ export const validaError = (req: Request, res: Response, next: NextFunction) => 
     return;
   }
 
+
   next();
 };
 

@@ -47,6 +47,18 @@ export type CommentLikeT = {
   createdAt: string;
 };
 
+export type PostLikeT = {
+  _id: string;
+  userID: string;
+  postId: string;
+  status: statusCommentLike;
+  createdAt: string;
+  login:string,
+  
+};
+
+
+
 export type commenQu = {
   sortBy: string;
   sortDirection: string;

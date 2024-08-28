@@ -3,12 +3,16 @@
       "target": "ES2016",
       "module": "CommonJS",
       "outDir": "./dist",
+      "sourceMap": true,
       "allowSyntheticDefaultImports": true,
       "esModuleInterop": true,
       "forceConsistentCasingInFileNames": true,
       "strict": true,
       "noImplicitReturns": true,
-      "skipLibCheck": true
+      "skipLibCheck": true,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true
+
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.ts"],

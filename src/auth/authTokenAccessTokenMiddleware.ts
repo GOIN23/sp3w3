@@ -19,5 +19,6 @@ export const authTokenAccessTokenMiddleware = async (req: Request, res: Response
   }
 
   req.userId = checkAccessToken?.userId;
+  req.userLogin = checkAccessToken?.login
   next();
 };
